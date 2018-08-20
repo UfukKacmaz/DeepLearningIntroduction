@@ -2,34 +2,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 import scipy
-<<<<<<< HEAD
 import scipy.ndimage
 from skimage import color
 import matplotlib.patches as patches
-=======
-from skimage import color
->>>>>>> c764a466b11a698f46a931adced2a3439dcc1daa
 
 from load_gtsrb import *
 
 ################
 ## EXERCISE 1 ##
 ################
-<<<<<<< HEAD
 # Load dataset
 dataset_path = "C:/Users/schaf/Documents/GTSRB/Final_Training/Images/"
 classes = [1, 2]
 [imgs, labels, class_descs, sign_ids] = load_gtsrb_images(dataset_path, classes, 50)    
-=======
-dataset_path = "C:/Users/schaf/Documents/GTSRB/Final_Training/Images/"
-classes = [1, 2]
-[imgs, labels, class_descs, sign_ids] = load_gtsrb_images(dataset_path, classes, 500)    
->>>>>>> c764a466b11a698f46a931adced2a3439dcc1daa
 
 ################
 ## EXERCISE 2 ##
 ################
-<<<<<<< HEAD
 # imgs_50 = np.array([img for img, label in zip(imgs, labels) if label == 2], dtype=np.uint8)
 # labels_50 = np.array([2 for _ in range(imgs_50.shape[0])], dtype=np.uint8)
 
@@ -53,36 +42,10 @@ classes = [1, 2]
 #     plt.imshow(i)
 #     plt.title(l)
 #     plt.show()
-=======
-imgs_50 = np.array([img for img, label in zip(imgs, labels) if label == 2])
-labels_50 = np.array([2 for _ in range(imgs_50.shape[0])])
-
-indx = np.random.randint(0, imgs_50.shape[0], 5)
-i_s = imgs_50[indx]
-l_s = labels_50[indx]
- 
-for i, l in zip(i_s, l_s):
-    plt.imshow(i)
-    plt.title(l)
-    plt.show()
-
-imgs_30 = np.array([img for img, label in zip(imgs, labels) if label == 1], dtype=np.uint8)
-labels_30 = np.array([1 for _ in range(imgs_50.shape[0])], dtype=np.uint8)
-
-indx = np.random.randint(0, imgs_30.shape[0], 5)
-i_s = imgs_30[indx]
-l_s = labels_30[indx]
- 
-for i, l in zip(i_s, l_s):
-    plt.imshow(i)
-    plt.title(l)
-    plt.show()
->>>>>>> c764a466b11a698f46a931adced2a3439dcc1daa
 
 ################
 ## EXERCISE 3 ##
 ################
-<<<<<<< HEAD
 
 # Convert images to uint8 and to grayscale
 imgs = imgs.astype(np.uint8)
@@ -163,24 +126,21 @@ plt.show()
 ################
 
 w = [2.0, -1.0]
+print(w)
 b = 0.0
 
-indx = np.random.randint(0, 100, 30)
-xs = x[indx]
-ys = y[indx]
-ims = imgs[indx]
-for i, x_p in enumerate(xs):
-    c = w[0] * x_p[0] + w[1] * x_p[1]
-    if c > b:
-        pred = 1
-    else:
-        pred = 2
-    #print(x_p, c)
-    #plt.imshow(ims[i], cmap="gray")
-    #plt.title(pred)
-    #plt.show()
-    print("Prediction: ", pred)
-    print("Clas::", ys[i])
+# indx = np.random.randint(0, 100, 30)
+# xs = x[indx]
+# ys = y[indx]
+# ims = imgs[indx]
+# for i, x_p in enumerate(xs):
+#     c = w[0] * x_p[0] + w[1] * x_p[1]
+#     if c > b:
+#         pred = 1
+#     else:
+#         pred = 2
+#     print("Prediction: ", pred)
+#     print("Clas::", ys[i])
 
 ################
 ## EXERCISE 8 ##
@@ -233,8 +193,3 @@ pred = predict(x_p)
 plt.imshow(img, cmap="gray")
 plt.title(str(y_p) + " != "+ str(pred))
 plt.show()
-=======
-# img = color.rgb2gray(io.imread('image.png'))
-
-#for img in imgs_30
->>>>>>> c764a466b11a698f46a931adced2a3439dcc1daa
