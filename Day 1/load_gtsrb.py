@@ -5,8 +5,11 @@ import numpy as np
 import cv2
 import os.path
 
+<<<<<<< HEAD
 np.random.seed(42)
 
+=======
+>>>>>>> c764a466b11a698f46a931adced2a3439dcc1daa
 def load_gtsrb_images(dataset_path, classes = range(43), max_num_imgs_per_class=float('Inf') ):
     
     img_size = [32, 32]
