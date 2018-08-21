@@ -13,7 +13,7 @@ from load_gtsrb import *
 # Load dataset
 dataset_path = "C:/Users/schaf/Documents/GTSRB/Final_Training/Images/"
 classes = [2, 12, 13]
-[imgs, labels, class_descs, sign_ids] = load_gtsrb_images(dataset_path, classes, 50)  
+[imgs, labels, class_descs, sign_ids] = load_gtsrb_images(dataset_path, classes, 150)  
 imgs = imgs.astype(np.uint8)
 
 # plt.imshow(imgs[0])
@@ -23,7 +23,7 @@ imgs = imgs.astype(np.uint8)
 ## EXERCISE 2 ##
 ################
 
-imgs = np.array([cv2.cvtColor(img, cv2.COLOR_RGB2GRAY) for img in imgs])
+# imgs = np.array([cv2.cvtColor(img, cv2.COLOR_RGB2GRAY) for img in imgs])
 
 ################
 ## EXERCISE 3 ##
@@ -57,22 +57,23 @@ def hog_image(img, cell_size, block_size, nbins):
     gradients /= cell_count
     return gradients
 
-def extract_hog_features():
+def extract_hog_features(imgs, cell_size, block_size, nbins):
     # Save HOG Features for every image
-    cell_size = (8, 8)
-    block_size = (2, 2)
-    nbins = 9
     bin = 3
-    x = np.empty(shape=(imgs.shape[0], cell_size[0]//block_size[0] * cell_size[1]//block_size[1] * nbins))
+    x = np.empty(shape=(imgs.shape[0], imgs[0].shape[0] // cell_size[0] * imgs[0].shape[1] // cell_size[1] * nbins))
     for i, img in enumerate(imgs):
         gradients = hog_image(img, cell_size, block_size, nbins)
         x[i] = gradients.ravel()
-    np.save(dataset_path+"x_hog.npy", x)
-    np.save(dataset_path+"y_hog.npy", labels)
+    return x, labels
 
-extract_hog_features()
-x = np.load(dataset_path+"x_hog.npy")
-y = np.load(dataset_path+"y_hog.npy")
+# cell_size = (8, 8)
+# block_size = (4, 4)
+# nbins = 9
+# x, y = extract_hog_features(imgs, cell_size, block_size, nbins)
+# np.save(dataset_path+"x_hog.npy", x)
+# np.save(dataset_path+"y_hog.npy", labels)
+# x = np.load(dataset_path+"x_hog.npy")
+# y = np.load(dataset_path+"y_hog.npy")
 
 ################
 ## EXERCISE 4 ##
@@ -80,17 +81,128 @@ y = np.load(dataset_path+"y_hog.npy")
 
 from sklearn.decomposition import PCA
 
-pca = PCA(n_components=2)
-pca.fit(x)
-x_transformed = pca.transform(x)
+def perform_pca(x):
+    pca = PCA(n_components=2)
+    pca.fit(x)
+    x_transformed = pca.transform(x)
+    return x_transformed
 
-colors = {2: "red", 12: "blue", 13: "green"}
-for x_p, y_p in zip(x_transformed, y):
-    plt.scatter(x_p[0], x_p[1], color=colors[y_p])
-ax = plt.gca()
-ax.legend(["Speed limit 50", "Right of way on this street", "Yield way"])
-leg = ax.get_legend()
-leg.legendHandles[0].set_color('red')
-leg.legendHandles[1].set_color('blue')
-leg.legendHandles[2].set_color('green')
-plt.show()
+# x_transformed = perform_pca(x)
+# np.save(dataset_path+"x_hog_pca.npy", x_transformed)
+# x_transformed = np.load(dataset_path+"x_hog_pca.npy")
+
+################
+## EXERCISE 5 ##
+################
+
+# colors = {2: "red", 12: "blue", 13: "green"}
+# for x_p, y_p in zip(x_transformed, y):
+#     plt.scatter(x_p[0], x_p[1], color=colors[y_p])
+# ax = plt.gca()
+# ax.legend(["Speed limit 50", "Right of way on this street", "Yield way"])
+# leg = ax.get_legend()
+# leg.legendHandles[0].set_color('red')
+# leg.legendHandles[1].set_color('blue')
+# leg.legendHandles[2].set_color('green')
+# plt.show()
+
+################
+## EXERCISE 6 ##
+################
+
+import matplotlib
+from matplotlib import colors as mcolors
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import classification_report
+
+def get_train_valid_test(x, y):
+    test_size = 0.3
+    valid_size = 0.2 / (1 - test_size)
+    x_train, x_test, y_train, y_test = train_test_split(
+        x, y, test_size=test_size, random_state=42)
+    x_train, x_valid, y_train, y_valid = train_test_split(
+        x_train, y_train, test_size=valid_size, random_state=42)
+    return (x_train, y_train), (x_valid, y_valid), (x_test, y_test)
+
+# (x_train, y_train), (x_valid, y_valid), (x_test, y_test) = get_train_valid_test(x, y)
+# parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10], 'gamma': [0.01, 0.1, 1/x_train.shape[0]]}
+
+# print("\n\nTRAINING FOR 3 CLASSES!")
+# svc = SVC(decision_function_shape="ovr")
+# clf = GridSearchCV(svc, parameters)
+# clf.fit(x_train, y_train)
+
+# print("TESTINGFOR 3 CLASSES!")
+# print("Best parameters set found on development set:")
+# print(clf.best_params_)
+# y_valid, y_pred = y_valid, clf.predict(x_valid)
+# print("Validation acc: ", clf.score(x_valid, y_valid))
+# print(confusion_matrix(y_valid, y_pred, labels=[2, 12, 13]))
+
+################
+## EXERCISE 7 ##
+################
+
+# Load full dataset
+num_classes = 43
+classes = range(num_classes)
+[imgs, labels, class_descs, sign_ids] = load_gtsrb_images(dataset_path, classes, 500)  
+imgs = imgs.astype(np.uint8)
+imgs = np.array([cv2.cvtColor(img, cv2.COLOR_RGB2GRAY) for img in imgs])
+
+# Compute hog features for all classes
+cell_size = (8, 8)
+block_size = (4, 4)
+nbins = 9
+#x, y = extract_hog_features(imgs, cell_size, block_size, nbins)
+#np.save(dataset_path+"x_hog_full.npy", x)
+#np.save(dataset_path+"y_hog_full.npy", labels)
+x = np.load(dataset_path+"x_hog_full.npy")
+y = np.load(dataset_path+"y_hog_full.npy")
+
+# Compute PCA for hog features for all classes
+#x_transformed = perform_pca(x)
+#np.save(dataset_path+"x_hog_pca_full.npy", x_transformed)
+x_transformed = np.load(dataset_path+"x_hog_pca_full.npy")
+
+# Plot PCA results
+# cmap = matplotlib.cm.get_cmap('Spectral')
+# colors = {i: cmap(i*(1/num_classes)) for i in range(num_classes)}
+# for x_p, y_p in zip(x_transformed, y):
+#     plt.scatter(x_p[0], x_p[1], color=colors[y_p])
+# plt.show()
+
+# Split Dataset and compute SVM classification
+(x_train, y_train), (x_valid, y_valid), (x_test, y_test) = get_train_valid_test(x, y)
+parameters = {
+    'kernel':('poly', 'linear', 'rbf'), 
+    'C':[0.5, 1, 5, 10], 
+    'gamma': np.arange(0, 1, 0.3)
+    }
+
+print("\n\nTRAINING FOR ALL CLASSES!")
+svc = SVC(decision_function_shape="ovr")
+clf = GridSearchCV(svc, parameters)
+clf.fit(x_train, y_train)
+
+print("TESTINGFOR ALL CLASSES!")
+print("Best parameters set found on development set:")
+print(clf.best_params_)
+y_valid, y_pred = y_valid, clf.predict(x_valid)
+print("Validation acc: ", clf.score(x_valid, y_valid))
+print(confusion_matrix(y_valid, y_pred, labels=range(num_classes)))
+
+################
+## EXERCISE 8 ##
+################
+
+rand_indx = [i for i in range(x.shape[0]) if y_pred[i] != y_valid[i]]
+if len(rand_indx) > 0:
+    img = imgs[rand_indx[0]]
+    plt.imshow(img)
+    title = "Target: " + str(y_valid[rand_indx[0]]) + " - Pred: " + str(y_pred[rand_indx[0]]) 
+    plt.title(title)
+    plt.show()
