@@ -57,7 +57,7 @@ def load_gtsrb_images(dataset_path, classes = range(43), max_num_imgs_per_class=
     class_descs.append('Speed limit 70') #4
     class_descs.append('Speed limit 80') #5
     class_descs.append('Derestriction 80') #6 
-    class_descs.append('Speed limit 100')
+    class_descs.append('Speed limit 100') #7
     class_descs.append('Speed limit 120') #8
     class_descs.append('Prohibit Overtaking')
     class_descs.append('Prohibit Overtaking for trucks')
