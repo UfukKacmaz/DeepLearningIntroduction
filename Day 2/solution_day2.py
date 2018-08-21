@@ -23,7 +23,7 @@ imgs = imgs.astype(np.uint8)
 ## EXERCISE 2 ##
 ################
 
-# imgs = np.array([cv2.cvtColor(img, cv2.COLOR_RGB2GRAY) for img in imgs])
+imgs = np.array([cv2.cvtColor(img, cv2.COLOR_RGB2GRAY) for img in imgs])
 
 ################
 ## EXERCISE 3 ##
@@ -66,14 +66,14 @@ def extract_hog_features(imgs, cell_size, block_size, nbins):
         x[i] = gradients.ravel()
     return x, labels
 
-# cell_size = (8, 8)
-# block_size = (4, 4)
-# nbins = 9
+cell_size = (8, 8)
+block_size = (4, 4)
+nbins = 9
 # x, y = extract_hog_features(imgs, cell_size, block_size, nbins)
 # np.save(dataset_path+"x_hog.npy", x)
 # np.save(dataset_path+"y_hog.npy", labels)
-# x = np.load(dataset_path+"x_hog.npy")
-# y = np.load(dataset_path+"y_hog.npy")
+x = np.load(dataset_path+"x_hog.npy")
+y = np.load(dataset_path+"y_hog.npy")
 
 ################
 ## EXERCISE 4 ##
@@ -127,20 +127,35 @@ def get_train_valid_test(x, y):
         x_train, y_train, test_size=valid_size, random_state=42)
     return (x_train, y_train), (x_valid, y_valid), (x_test, y_test)
 
-# (x_train, y_train), (x_valid, y_valid), (x_test, y_test) = get_train_valid_test(x, y)
-# parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10], 'gamma': [0.01, 0.1, 1/x_train.shape[0]]}
+num_classes = 3
+(x_train, y_train), (x_valid, y_valid), (x_test, y_test) = get_train_valid_test(x, y)
+parameters = {
+    'kernel':('poly', 'linear', 'rbf'), 
+    'C':[0.5, 1, 5, 10], 
+    'gamma': np.arange(0, 1, 0.3)
+    }
 
-# print("\n\nTRAINING FOR 3 CLASSES!")
+# print("\n\nTRAINING FOR ALL CLASSES!")
 # svc = SVC(decision_function_shape="ovr")
 # clf = GridSearchCV(svc, parameters)
 # clf.fit(x_train, y_train)
 
-# print("TESTINGFOR 3 CLASSES!")
+# print("VALID FOR ALL CLASSES!")
 # print("Best parameters set found on development set:")
 # print(clf.best_params_)
 # y_valid, y_pred = y_valid, clf.predict(x_valid)
 # print("Validation acc: ", clf.score(x_valid, y_valid))
-# print(confusion_matrix(y_valid, y_pred, labels=[2, 12, 13]))
+# print(confusion_matrix(y_valid, y_pred, labels=range(num_classes)))
+
+print("TESTING FOR ALL CLASSES!")
+best_c = 0.5
+best_gamma = "auto"
+best_kernel = "linear"
+clf = SVC(decision_function_shape="ovr", C=best_c, gamma=best_gamma, kernel=best_kernel)
+clf.fit(x_train, y_train)
+y_test, y_pred = y_test, clf.predict(x_test)
+print("Validation acc: ", clf.score(x_test, y_test))
+print(confusion_matrix(y_test, y_pred, labels=range(num_classes)))
 
 ################
 ## EXERCISE 7 ##
@@ -183,26 +198,36 @@ parameters = {
     'gamma': np.arange(0, 1, 0.3)
     }
 
-print("\n\nTRAINING FOR ALL CLASSES!")
-svc = SVC(decision_function_shape="ovr")
-clf = GridSearchCV(svc, parameters)
-clf.fit(x_train, y_train)
+# print("\n\nTRAINING FOR ALL CLASSES!")
+# svc = SVC(decision_function_shape="ovr")
+# clf = GridSearchCV(svc, parameters, n_jobs=-1)
+# clf.fit(x_train, y_train)
 
-print("TESTINGFOR ALL CLASSES!")
-print("Best parameters set found on development set:")
-print(clf.best_params_)
-y_valid, y_pred = y_valid, clf.predict(x_valid)
-print("Validation acc: ", clf.score(x_valid, y_valid))
-print(confusion_matrix(y_valid, y_pred, labels=range(num_classes)))
+# print("VALID FOR ALL CLASSES!")
+# print("Best parameters set found on development set:")
+# print(clf.best_params_)
+# y_valid, y_pred = y_valid, clf.predict(x_valid)
+# print("Validation acc: ", clf.score(x_valid, y_valid))
+# print(confusion_matrix(y_valid, y_pred, labels=range(num_classes)))
+
+print("TESTING FOR ALL CLASSES!")
+best_c = 10
+best_gamma = 0.1
+best_kernel = "rbf"
+clf = SVC(decision_function_shape="ovr", C=best_c, gamma=best_gamma, kernel=best_kernel)
+clf.fit(x_train, y_train)
+y_test, y_pred = y_test, clf.predict(x_test)
+print("Testing acc: ", clf.score(x_test, y_test))
+print(confusion_matrix(y_test, y_pred, labels=range(num_classes)))
 
 ################
 ## EXERCISE 8 ##
 ################
 
-rand_indx = [i for i in range(x.shape[0]) if y_pred[i] != y_valid[i]]
+rand_indx = [i for i in range(x_test.shape[0]) if y_pred[i] != y_test[i]]
 if len(rand_indx) > 0:
     img = imgs[rand_indx[0]]
     plt.imshow(img)
-    title = "Target: " + str(y_valid[rand_indx[0]]) + " - Pred: " + str(y_pred[rand_indx[0]]) 
+    title = "Target: " + str(y_test[rand_indx[0]]) + " - Pred: " + str(y_pred[rand_indx[0]]) 
     plt.title(title)
     plt.show()
