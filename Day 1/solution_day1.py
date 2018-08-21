@@ -2,13 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 import scipy
-<<<<<<< HEAD
 import scipy.ndimage
 from skimage import color
 import matplotlib.patches as patches
-=======
-from skimage import color
->>>>>>> c764a466b11a698f46a931adced2a3439dcc1daa
 
 from load_gtsrb import *
 
@@ -130,24 +126,21 @@ plt.show()
 ################
 
 w = [2.0, -1.0]
+print(w)
 b = 0.0
 
-indx = np.random.randint(0, 100, 30)
-xs = x[indx]
-ys = y[indx]
-ims = imgs[indx]
-for i, x_p in enumerate(xs):
-    c = w[0] * x_p[0] + w[1] * x_p[1]
-    if c > b:
-        pred = 1
-    else:
-        pred = 2
-    #print(x_p, c)
-    #plt.imshow(ims[i], cmap="gray")
-    #plt.title(pred)
-    #plt.show()
-    print("Prediction: ", pred)
-    print("Clas::", ys[i])
+# indx = np.random.randint(0, 100, 30)
+# xs = x[indx]
+# ys = y[indx]
+# ims = imgs[indx]
+# for i, x_p in enumerate(xs):
+#     c = w[0] * x_p[0] + w[1] * x_p[1]
+#     if c > b:
+#         pred = 1
+#     else:
+#         pred = 2
+#     print("Prediction: ", pred)
+#     print("Clas::", ys[i])
 
 ################
 ## EXERCISE 8 ##
