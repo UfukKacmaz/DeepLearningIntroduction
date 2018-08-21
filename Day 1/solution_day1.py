@@ -15,21 +15,14 @@ from load_gtsrb import *
 ################
 ## EXERCISE 1 ##
 ################
-<<<<<<< HEAD
 # Load dataset
 dataset_path = "C:/Users/schaf/Documents/GTSRB/Final_Training/Images/"
 classes = [1, 2]
 [imgs, labels, class_descs, sign_ids] = load_gtsrb_images(dataset_path, classes, 50)    
-=======
-dataset_path = "C:/Users/schaf/Documents/GTSRB/Final_Training/Images/"
-classes = [1, 2]
-[imgs, labels, class_descs, sign_ids] = load_gtsrb_images(dataset_path, classes, 500)    
->>>>>>> c764a466b11a698f46a931adced2a3439dcc1daa
 
 ################
 ## EXERCISE 2 ##
 ################
-<<<<<<< HEAD
 # imgs_50 = np.array([img for img, label in zip(imgs, labels) if label == 2], dtype=np.uint8)
 # labels_50 = np.array([2 for _ in range(imgs_50.shape[0])], dtype=np.uint8)
 
@@ -53,36 +46,10 @@ classes = [1, 2]
 #     plt.imshow(i)
 #     plt.title(l)
 #     plt.show()
-=======
-imgs_50 = np.array([img for img, label in zip(imgs, labels) if label == 2])
-labels_50 = np.array([2 for _ in range(imgs_50.shape[0])])
-
-indx = np.random.randint(0, imgs_50.shape[0], 5)
-i_s = imgs_50[indx]
-l_s = labels_50[indx]
- 
-for i, l in zip(i_s, l_s):
-    plt.imshow(i)
-    plt.title(l)
-    plt.show()
-
-imgs_30 = np.array([img for img, label in zip(imgs, labels) if label == 1], dtype=np.uint8)
-labels_30 = np.array([1 for _ in range(imgs_50.shape[0])], dtype=np.uint8)
-
-indx = np.random.randint(0, imgs_30.shape[0], 5)
-i_s = imgs_30[indx]
-l_s = labels_30[indx]
- 
-for i, l in zip(i_s, l_s):
-    plt.imshow(i)
-    plt.title(l)
-    plt.show()
->>>>>>> c764a466b11a698f46a931adced2a3439dcc1daa
 
 ################
 ## EXERCISE 3 ##
 ################
-<<<<<<< HEAD
 
 # Convert images to uint8 and to grayscale
 imgs = imgs.astype(np.uint8)
@@ -233,8 +200,3 @@ pred = predict(x_p)
 plt.imshow(img, cmap="gray")
 plt.title(str(y_p) + " != "+ str(pred))
 plt.show()
-=======
-# img = color.rgb2gray(io.imread('image.png'))
-
-#for img in imgs_30
->>>>>>> c764a466b11a698f46a931adced2a3439dcc1daa
