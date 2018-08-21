@@ -105,12 +105,12 @@ def extract_features(croped_img_30, croped_img_50):
         # plt.legend(["30", "50"])
         # plt.show()
     y = labels
-    np.save("x.npy", x)
-    np.save("y.npy", y)
+    np.save(dataset_path+"x.npy", x)
+    np.save(dataset_path+"y.npy", y)
 
 extract_features(croped_img_30, croped_img_50)
-x = np.load("x.npy")
-y = np.load("y.npy")
+x = np.load(dataset_path+"x.npy")
+y = np.load(dataset_path+"y.npy")
 
 ################
 ## EXERCISE 6 ##

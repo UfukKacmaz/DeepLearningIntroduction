@@ -45,7 +45,7 @@ def load_gtsrb_images(dataset_path, classes = range(43), max_num_imgs_per_class=
                 seq_idx += 1
                 
             print("Serializing images", image_block_class.shape)
-            file = open(dataset_path + dump_file, 'wb')
+            file = open(dump_file, 'wb')
             pickle.dump(image_block_class, file)
             file.close()
 
@@ -97,7 +97,7 @@ def load_gtsrb_images(dataset_path, classes = range(43), max_num_imgs_per_class=
     for class_idx in classes:
         dump_file = ("gtsrb_%02d.dump" % class_idx)
             
-        file = open(dump_file, 'rb')
+        file = open(dataset_path + dump_file, 'rb')
         image_block_class = pickle.load(file)
         file.close()
         img_idxs = np.arange(image_block_class.shape[3])
