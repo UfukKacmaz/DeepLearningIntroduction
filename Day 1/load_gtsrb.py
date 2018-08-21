@@ -5,11 +5,8 @@ import numpy as np
 import cv2
 import os.path
 
-<<<<<<< HEAD
 np.random.seed(42)
 
-=======
->>>>>>> c764a466b11a698f46a931adced2a3439dcc1daa
 def load_gtsrb_images(dataset_path, classes = range(43), max_num_imgs_per_class=float('Inf') ):
     
     img_size = [32, 32]
@@ -21,7 +18,7 @@ def load_gtsrb_images(dataset_path, classes = range(43), max_num_imgs_per_class=
     for class_idx in classes:
         image_block_class = np.zeros( img_size + [3, 0] )
         
-        dump_file = ("gtsrb_%02d.dump" % class_idx)
+        dump_file = dataset_path + ("gtsrb_%02d.dump" % class_idx)
         if not os.path.exists(dump_file):
             seq_idx = 0
             sub_path = dataset_path + ("/%05d/"  % class_idx)
@@ -48,7 +45,7 @@ def load_gtsrb_images(dataset_path, classes = range(43), max_num_imgs_per_class=
                 seq_idx += 1
                 
             print("Serializing images", image_block_class.shape)
-            file = open(dump_file, 'wb')
+            file = open(dataset_path + dump_file, 'wb')
             pickle.dump(image_block_class, file)
             file.close()
 
