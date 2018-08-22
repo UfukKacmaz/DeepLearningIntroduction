@@ -61,13 +61,14 @@ def bias_initializer(name, shape, bias_init=0.0):
         return b
 
 # Define a conv layer
-def conv_layer(x, size_in, size_out, bias_init=0.0, k_size=3, name="conv", act="relu", initializer="xavier"):
+def conv_layer(x, size_in, size_out, bias_init=0.0, k_size=3, name="conv", act="relu", initializer="xavier", activation=False):
     W = weight_initializer(name=name, shape=[k_size, k_size, size_in, size_out], initializer=initializer)
     b = bias_initializer(name=name, shape=[size_out], bias_init=bias_init)
     val = conv2d(x, W)
     val = tf.add(val, b)
-    activation_func = activation_functions[act]
-    val = activation_func(val)
+    if activation:
+        activation_func = activation_functions[act]
+        val = activation_func(val)
     return val
 
 # Define a fc layer
