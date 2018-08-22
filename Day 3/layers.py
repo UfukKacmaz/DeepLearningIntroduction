@@ -10,7 +10,7 @@ BN_EPSILON          = 0.001
 activation_functions = {"relu": tf.nn.relu, "sigmoid": tf.nn.sigmoid, "lrelu": tf.nn.leaky_relu,
                         "tanh": tf.nn.tanh, "relu6": tf.nn.relu6}
 weight_initializers = {"truncated_normal": tf.truncated_normal_initializer,
-                        "normal": random_normal_initializer,
+                        "normal": tf.random_normal_initializer,
                        "xavier": tf.contrib.layers.xavier_initializer}
  
 # Conv Layer
@@ -46,7 +46,7 @@ def batch_norm(x, is_training):
 def weight_initializer(name, shape, initializer="xavier"):
     with tf.name_scope(name):
         if initializer != "xavier":
-            initializer = weight_initializers[initializer](mean=MEAN; stddev=STD_DEV)
+            initializer = weight_initializers[initializer](mean=MEAN, stddev=STD_DEV)
         else:
             initializer = weight_initializers[initializer]()
         W = tf.get_variable(name+"W", shape=shape, initializer=initializer)

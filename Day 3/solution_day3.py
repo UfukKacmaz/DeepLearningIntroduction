@@ -20,19 +20,6 @@ classes = range(5)
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 
-# Load RGB images
-[imgs, labels, class_descs, sign_ids] = load_gtsrb_images(dataset_path, classes, 10000)  
-imgs = imgs.astype(np.uint8)
-
-# Transform y labels to one-hot array
-x, y = imgs, labels
-# Shuffle data first
-idx = np.random.randint(0, x.shape[0], x.shape[0])
-x, y = x[idx], y[idx]
-y = tf.keras.utils.to_categorical(y, num_classes=len(classes))
-# Transform x images to vector
-x = np.array([x_k[:].flatten() for x_k in x])
-
 # Helper function to split the dataset
 def get_train_valid_test(x, y):
     test_size = 0.3
@@ -43,13 +30,43 @@ def get_train_valid_test(x, y):
         x_train, y_train, test_size=valid_size, random_state=42)
     return (x_train, y_train), (x_valid, y_valid), (x_test, y_test)
 
-# Split the dataset
-(x_train, y_train), (x_valid, y_valid), (x_test, y_test) = get_train_valid_test(x, y)
+def save_dataset():
+    # Load RGB images
+    [imgs, labels, class_descs, sign_ids] = load_gtsrb_images(dataset_path, classes, 10000)  
+    imgs = imgs.astype(np.uint8)
+    # Transform y labels to one-hot array
+    x, y = imgs, labels
+    # Shuffle data first
+    idx = np.random.randint(0, x.shape[0], x.shape[0])
+    x, y = x[idx], y[idx]
+    y = tf.keras.utils.to_categorical(y, num_classes=len(classes))
+    # Transform x images to vector
+    x = np.array([x_k[:].flatten() for x_k in x])
+    # Split the dataset
+    (x_train, y_train), (x_valid, y_valid), (x_test, y_test) = get_train_valid_test(x, y)
+    # Whiten the data
+    x_train_mean = np.mean(x_train)
+    x_train_std = np.std(x_train)
+    x_train = np.array([(x_k - x_train_mean) / x_train_std for x_k in x_train])
+    # Save the data to npy files
+    np.save(dataset_path+"x_train.npy", x_train)
+    np.save(dataset_path+"y_train.npy", y_train)
+    np.save(dataset_path+"x_valid.npy", x_valid)
+    np.save(dataset_path+"y_valid.npy", y_valid)
+    np.save(dataset_path+"x_test.npy", x_test)
+    np.save(dataset_path+"y_test.npy", y_test)
 
-# Whiten the data
-x_train_mean = np.mean(x_train)
-x_train_std = np.std(x_train)
-x_train = np.array([(x_k - x_train_mean) / x_train_std for x_k in x_train])
+def load_dataset():
+    x_train = np.load(dataset_path+"x_train.npy")
+    y_train = np.load(dataset_path+"y_train.npy")
+    x_valid = np.load(dataset_path+"x_valid.npy")
+    y_valid = np.load(dataset_path+"y_valid.npy")
+    x_test = np.load(dataset_path+"x_test.npy")
+    y_test = np.load(dataset_path+"y_test.npy")
+    return (x_train, y_train), (x_valid, y_valid), (x_test, y_test)
+
+#save_dataset()
+(x_train, y_train), (x_valid, y_valid), (x_test, y_test) = load_dataset()
 
 ################
 ## EXERCISE 3 ##
@@ -64,8 +81,8 @@ def next_batch(x, y, batch_size):
     return x_batch, y_batch
 
 # Model variables
-num_classes = len(classes)
-num_features = x.shape[1]
+num_classes = y_train.shape[1]
+num_features = x_train.shape[1]
 train_size, valid_size, test_size = x_train.shape[0], x_valid.shape[0], x_test.shape[0]
 epochs = 15
 batch_size = 16
@@ -82,13 +99,11 @@ y = tf.placeholder(dtype=tf.float32, shape=[None, num_classes])
 def model(x):
     x = fc_layer(x, num_features, 2048, name="fc1", initializer="normal")
     x = tf.nn.relu(x)
-    x = fc_layer(x, 2048, 1024, name="fc2", initializer="normal")
+    x = fc_layer(x, 2048, 2048, name="fc2", initializer="normal")
     x = tf.nn.relu(x)
-    x = fc_layer(x, 1024, 1024, name="fc3", initializer="normal")
+    x = fc_layer(x, 2048, 1024, name="fc3", initializer="normal")
     x = tf.nn.relu(x)
-    x = fc_layer(x, 1024, 1024, name="fc4", initializer="normal")
-    x = tf.nn.relu(x)
-    x = fc_layer(x, 1024, num_classes, name="fc5", initializer="normal")
+    x = fc_layer(x, 1024, num_classes, name="fc6", initializer="normal")
     x = tf.nn.softmax(x)
     return x
 
