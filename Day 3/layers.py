@@ -1,17 +1,16 @@
 # Imports
-from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
 import numpy as np
 import os
-  
-from plotting import *
 
-STD_DEV             = 0.1000
+MEAN                = 0.000
+STD_DEV             = 0.100
 BN_EPSILON          = 0.001
 
 activation_functions = {"relu": tf.nn.relu, "sigmoid": tf.nn.sigmoid, "lrelu": tf.nn.leaky_relu,
                         "tanh": tf.nn.tanh, "relu6": tf.nn.relu6}
 weight_initializers = {"truncated_normal": tf.truncated_normal_initializer,
+                        "normal": random_normal_initializer,
                        "xavier": tf.contrib.layers.xavier_initializer}
  
 # Conv Layer
@@ -47,7 +46,7 @@ def batch_norm(x, is_training):
 def weight_initializer(name, shape, initializer="xavier"):
     with tf.name_scope(name):
         if initializer != "xavier":
-            initializer = weight_initializers[initializer](stddev=STD_DEV)
+            initializer = weight_initializers[initializer](mean=MEAN; stddev=STD_DEV)
         else:
             initializer = weight_initializers[initializer]()
         W = tf.get_variable(name+"W", shape=shape, initializer=initializer)
@@ -72,13 +71,13 @@ def conv_layer(x, size_in, size_out, bias_init=0.0, k_size=3, name="conv", act="
     return val
 
 # Define a fc layer
-def fc_layer(x, size_in, size_out, bias_init=0.0, name="fc", act="relu", initializer="xavier", last_layer=False):
+def fc_layer(x, size_in, size_out, bias_init=0.0, name="fc", act="relu", initializer="xavier", activation=False):
     with tf.name_scope(name):
         W = weight_initializer(name=name, shape=[size_in, size_out], initializer=initializer)
         b = bias_initializer(name=name, shape=[size_out], bias_init=bias_init)
         val = tf.matmul(x, W)
         val = tf.add(val, b)
-        if not last_layer:
+        if activation:
             activation_func = activation_functions[act]
             val = activation_func(val)
         return val
