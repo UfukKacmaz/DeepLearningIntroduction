@@ -132,7 +132,7 @@ num_classes = 3
 parameters = {
     'kernel':('poly', 'linear', 'rbf'), 
     'C':[0.5, 1, 5, 10], 
-    'gamma': np.arange(0, 1, 0.3)
+    'gamma': ["auto", 1]
     }
 
 # print("\n\nTRAINING FOR ALL CLASSES!")
@@ -195,7 +195,7 @@ x_transformed = np.load(dataset_path+"x_hog_pca_full.npy")
 parameters = {
     'kernel':('poly', 'linear', 'rbf'), 
     'C':[0.5, 1, 5, 10], 
-    'gamma': np.arange(0, 1, 0.3)
+    'gamma': ["auto", 1]
     }
 
 # print("\n\nTRAINING FOR ALL CLASSES!")
@@ -212,7 +212,7 @@ parameters = {
 
 print("TESTING FOR ALL CLASSES!")
 best_c = 10
-best_gamma = 0.1
+best_gamma = 1.0
 best_kernel = "rbf"
 clf = SVC(decision_function_shape="ovr", C=best_c, gamma=best_gamma, kernel=best_kernel)
 clf.fit(x_train, y_train)
