@@ -5,7 +5,7 @@ import six.moves.cPickle as pickle
 import numpy as np
 import cv2
 import os.path
-
+ 
 np.random.seed(42)
 
 def load_gtsrb_images(dataset_path, classes = range(43), max_num_imgs_per_class=float('Inf') ):

@@ -13,15 +13,15 @@ from layers import *
 from helper import *
 
 # Load dataset
-dataset_path = "C:/Users/schaf/Documents/GTSRB/Final_Training/Images/"
-#dataset_path = "C:/Users/jan/Documents/GTSRB/Final_Training/Images/"
+#dataset_path = "C:/Users/schaf/Documents/GTSRB/Final_Training/Images/"
+dataset_path = "C:/Users/jan/Documents/GTSRB/Final_Training/Images/"
 
-num_classes = 2
-imgs_per_class = 50
+num_classes = 43
+imgs_per_class = 10000
 classes = range(num_classes)
-save_dataset(dataset_path, classes, imgs_per_class=imgs_per_class)
+#save_dataset(dataset_path, classes, imgs_per_class=imgs_per_class)
 data = GTSRB(dataset_path, num_classes)
-#data.data_augmentation(augment_size=1000)
+#data.data_augmentation(augment_size=10000)
 # Model variables
 train_size, valid_size, test_size = data.train_size, data.valid_size, data.test_size
 img_width, img_height, img_depth = data.img_width, data.img_height, data.img_depth
@@ -34,7 +34,7 @@ print("Test Size and Shape:", test_size, data.x_test[0].shape)
 ################
 
 # Hyperparameters
-epochs = 3
+epochs = 0
 batch_size = 32
 learning_rate = 2e-4
 optimizer = tf.train.RMSPropOptimizer
@@ -140,7 +140,7 @@ with tf.Session(graph=cnn_graph) as sess:
             " Valid loss: ", round(valid_loss, 3), " Train Acc: ", round(train_acc, 3), 
             " Valid Acc: ", round(valid_acc, 3))
         # Early stopping check
-        if valid_acc > last_valid_acc:
+        if valid_acc < last_valid_acc:
             early_stopping_patience -= 1
         if early_stopping_patience == 0:
             print("Early Stopping!")
@@ -148,8 +148,8 @@ with tf.Session(graph=cnn_graph) as sess:
         valid_losses.append(valid_loss)
         train_accs.append(train_acc)
         valid_accs.append(valid_acc)
-    display_convergence_error(train_losses, valid_losses)
-    display_convergence_acc(train_accs, valid_accs)
+    #display_convergence_error(train_losses, valid_losses)
+    #display_convergence_acc(train_accs, valid_accs)
     # Testing
     test_acc = 0.0
     test_loss = 0.0
@@ -163,16 +163,6 @@ with tf.Session(graph=cnn_graph) as sess:
     print("Test Accuracy:\t", test_acc)
     print("Test Loss:\t", test_loss)
     # Occlusion Map
-    true_img, true_label = data.x_test[10], data.y_test[10]
-    box_size = 6
-    prediction_image = np.empty(shape=(32-box_size+1, 32-box_size+1), dtype=np.float32)
-    gray_box = np.full((box_size,box_size,3), 100)
-    for i in range(32-box_size+1):
-        for j in range(32-box_size+1):
-            img = true_img.copy()
-            img[i:box_size+i, j:box_size+j] = gray_box
-            x_p = sess.run([pred_op], feed_dict={x: img.reshape(-1, 32, 32, 3)})
-            x_p = np.reshape(x_p, (2))
-            x_p = np.exp(x_p) / np.sum(np.exp(x_p), axis=0)
-            prediction_image[i][j] = x_p[np.argmax(true_label)]
-    occlusion_plot(prediction_image)
+    img, label = data.x_test[10], data.y_test[10]
+    box_size = 5
+    occlusion(img, label, box_size, sess, pred_op, x)

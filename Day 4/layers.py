@@ -2,7 +2,7 @@
 import tensorflow as tf
 import numpy as np
 import os
-
+ 
 MEAN                = 0.000
 STD_DEV             = 0.100
 BN_EPSILON          = 0.001
