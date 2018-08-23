@@ -93,11 +93,9 @@ def load_gtsrb_images(dataset_path, classes = range(43), max_num_imgs_per_class=
     class_descs.append('Pass left')
     class_descs.append('Roundabout') #40
     class_descs.append('Derestriction overtaking')
-    class_descs.append('Derestriction overtaking for trucks') #42
-
+    class_descs.append('Derestriction overtaking for trucks') #4
     for class_idx in classes:
-        dump_file = ("gtsrb_%02d.dump" % class_idx)
-            
+        dump_file = ("gtsrb_%02d.dump" % class_idx)       
         file = open(dataset_path + dump_file, 'rb')
         image_block_class = pickle.load(file)
         file.close()
@@ -106,10 +104,8 @@ def load_gtsrb_images(dataset_path, classes = range(43), max_num_imgs_per_class=
         image_block = np.concatenate( 
             [image_block, image_block_class[:,:,:,img_idxs[0:max_num_imgs_per_class]] ], axis=3)
         labels = np.concatenate( 
-            [labels, [class_idx] * len(img_idxs[0:max_num_imgs_per_class])], axis=0 )
-        
-    image_block = np.transpose( image_block, axes=[3, 0, 1, 2])
-                
+            [labels, [class_idx] * len(img_idxs[0:max_num_imgs_per_class])], axis=0 )      
+    image_block = np.transpose( image_block, axes=[3, 0, 1, 2]) 
     return image_block, labels, class_descs, sign_ids
 
 # Helper function to split the dataset
