@@ -177,14 +177,16 @@ class GTSRB:
 
     def data_augmentation(self, augment_size=5000): 
         image_generator = ImageDataGenerator(
-            rotation_range=10,
-            zoom_range = 0.05, 
-            width_shift_range=0.05,
-            height_shift_range=0.05,
+            rotation_range=10.0,
+            zoom_range = 0.2, 
+            width_shift_range=0.1,
+            height_shift_range=0.1,
             horizontal_flip=False,
             vertical_flip=False, 
+            featurewise_center=False, 
+            featurewise_std_normalization=False,
             data_format="channels_last",
-            zca_whitening=True)
+            zca_whitening=False)
         # fit data for zca whitening
         image_generator.fit(self.x_train, augment=True)
         # get transformed images

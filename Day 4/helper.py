@@ -25,8 +25,8 @@ def occlusion(img, label, box_size, sess, pred_op, x):
 
 # Display the convergence of the errors
 def display_convergence_error(train_error, valid_error):
-    plt.plot(range(1, len(train_error)+1), valid_error, color="red")
-    plt.plot(range(1, len(valid_error)+1), train_error, color="blue")
+    plt.plot(range(1, len(train_error)+1), train_error, color="red")
+    plt.plot(range(1, len(valid_error)+1), valid_error, color="blue")
     plt.legend(["Train", "valid"])
     plt.title('Error of the NN')
     plt.xlabel('Epoch')
