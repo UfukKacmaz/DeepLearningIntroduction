@@ -11,8 +11,8 @@ from load_gtsrb import *
 ################
 
 # Load dataset
-#dataset_path = "C:/Users/schaf/Documents/GTSRB/Final_Training/Images/"
-dataset_path = "C:/Users/jan/Documents/GTSRB/Final_Training/Images/"
+dataset_path = "C:/Users/schaf/Documents/GTSRB/Final_Training/Images/"
+#dataset_path = "C:/Users/jan/Documents/GTSRB/Final_Training/Images/"
 classes = range(43)
 
 ################
@@ -26,7 +26,7 @@ def get_train_valid_test(x, y):
     x_train, x_test, y_train, y_test = train_test_split(
         x, y, test_size=0.3, random_state=42)
     x_train, x_valid, y_train, y_valid = train_test_split(
-        x_train, y_train, test_size=0.3, random_state=42)
+        x_train, y_train, test_size=0.2, random_state=42)
     return (x_train, y_train), (x_valid, y_valid), (x_test, y_test)
 
 def save_dataset():
@@ -88,9 +88,9 @@ def next_batch(x, y, batch_size):
 num_classes = y_train.shape[1]
 num_features = x_train.shape[1]
 train_size, valid_size, test_size = x_train.shape[0], x_valid.shape[0], x_test.shape[0]
-epochs = 25
-batch_size = 16
-learning_rate = 5e-5
+epochs = 40
+batch_size = 64
+learning_rate = 1e-2
 train_mini_batches = train_size // batch_size
 valid_mini_batches = valid_size // batch_size
 test_mini_batches = test_size // batch_size
@@ -103,14 +103,13 @@ with dnn_graph.as_default():
 
     # Model definition
     def model(x):
-        x = fc_layer(x, num_features, 1024, name="fc1")
+        x = fc_layer(x, num_features, 3072, name="fc1")
         x = tf.nn.relu(x)
-        x = fc_layer(x, 1024, 512, name="fc2")
+        x = fc_layer(x, 3072, 6144, name="fc2")
         x = tf.nn.relu(x)
-        x = fc_layer(x, 512, 256, name="fc3")
+        x = fc_layer(x, 6144, 2000, name="fc3")
         x = tf.nn.relu(x)
-        x = fc_layer(x, 256, num_classes, name="fc4")
-        x = tf.nn.softmax(x)
+        x = fc_layer(x, 2000, num_classes, name="fc4")
         return x
 
     # TensorFlow Ops to train/test
@@ -118,7 +117,7 @@ with dnn_graph.as_default():
     loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=pred_op, labels=y))
     correct_result_op = tf.equal(tf.argmax(pred_op, axis=1), tf.argmax(y, axis=1))
     accuracy_op = tf.reduce_mean(tf.cast(correct_result_op , tf.float32))
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+    optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
     train_op = optimizer.minimize(loss_op)
 
     # # Start Training and Testing
@@ -181,7 +180,9 @@ batch_size = 64
 train_mini_batches = train_size // batch_size
 valid_mini_batches = valid_size // batch_size
 test_mini_batches = test_size // batch_size
+
 learning_rate = 2e-4
+optimizer = tf.train.RMSPropOptimizer
 
 cnn_graph = tf.Graph()
 with cnn_graph.as_default():
@@ -210,7 +211,6 @@ with cnn_graph.as_default():
         x = flatten(x)
         x = fc_layer(x, 128*4*4, 512, name="fc1")
         x = fc_layer(x, 512, num_classes, name="fc2")
-        x = tf.nn.softmax(x)
         return x
 
     # TensorFlow Ops to train/test
@@ -218,7 +218,7 @@ with cnn_graph.as_default():
     loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=pred_op, labels=y))
     correct_result_op = tf.equal(tf.argmax(pred_op, axis=1), tf.argmax(y, axis=1))
     accuracy_op = tf.reduce_mean(tf.cast(correct_result_op , tf.float32))
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+    optimizer = optimizer(learning_rate=learning_rate)
     train_op = optimizer.minimize(loss_op)
 
     # Start Training and Testing
