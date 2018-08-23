@@ -11,27 +11,16 @@ def occlusion_plot(prediction_heatmap):
     plt.show()
 
 def occlusion(img, label, box_size, sess, pred_op, x):
-    prediction_heatmap = np.empty(
-        shape=(img.shape[0], img.shape[1]), dtype=np.float32)
-    print(box_size//2, img.shape[0]+box_size//2, box_size//2, img.shape[1]+box_size//2)
-    padded_img = np.pad(
-        img, ((box_size//2, box_size//2), (box_size//2, box_size//2), (0, 0)), mode="constant", constant_values=0.0)
-    padded_img[box_size//2:img.shape[0]+box_size//2][box_size//2:img.shape[1]+box_size//2] = img
-    plt.imshow(padded_img)
-    plt.show()
+    prediction_heatmap = np.empty(shape=(img.shape[0]-box_size+1, img.shape[1]-box_size+1), dtype=np.float32)
     gray_box = np.full((box_size,box_size,3), 100)
-    for i in range(padded_img.shape[0]):
-        for j in range(padded_img.shape[0]):
-            img_s = padded_img.copy()
-            print(img_s.shape)
-            img_s[i:i+box_size, j:j+box_size] = gray_box
-            img_s = img_s[box_size//2:img.shape[0]+box_size//2][box_size//2:img.shape[1]+box_size//2]
-            print(img_s.shape)
+    for i in range(img.shape[0]-box_size+1):
+        for j in range(img.shape[1]-box_size+1):
+            img_s = img.copy()
+            img_s[i:box_size+i, j:box_size+j] = gray_box
             x_p = sess.run([pred_op], feed_dict={x: img_s.reshape(-1, img_s.shape[0], img_s.shape[1], img_s.shape[2])})
             x_p = np.reshape(x_p, (label.shape[0]))
             x_p = np.exp(x_p) / np.sum(np.exp(x_p), axis=0)
             prediction_heatmap[i][j] = x_p[np.argmax(label)]
-    print(prediction_heatmap)
     occlusion_plot(prediction_heatmap)
 
 # Display the convergence of the errors

@@ -21,7 +21,7 @@ imgs_per_class = 10000
 classes = range(num_classes)
 #save_dataset(dataset_path, classes, imgs_per_class=imgs_per_class)
 data = GTSRB(dataset_path, num_classes)
-#data.data_augmentation(augment_size=10000)
+data.data_augmentation(augment_size=10000)
 # Model variables
 train_size, valid_size, test_size = data.train_size, data.valid_size, data.test_size
 img_width, img_height, img_depth = data.img_width, data.img_height, data.img_depth
@@ -34,7 +34,7 @@ print("Test Size and Shape:", test_size, data.x_test[0].shape)
 ################
 
 # Hyperparameters
-epochs = 0
+epochs = 50
 batch_size = 32
 learning_rate = 2e-4
 optimizer = tf.train.RMSPropOptimizer
@@ -148,8 +148,8 @@ with tf.Session(graph=cnn_graph) as sess:
         valid_losses.append(valid_loss)
         train_accs.append(train_acc)
         valid_accs.append(valid_acc)
-    #display_convergence_error(train_losses, valid_losses)
-    #display_convergence_acc(train_accs, valid_accs)
+    display_convergence_error(train_losses, valid_losses)
+    display_convergence_acc(train_accs, valid_accs)
     # Testing
     test_acc = 0.0
     test_loss = 0.0
