@@ -1,0 +1,17 @@
+\chapter{Fazit und Ausblick}
+
+Wie die Untersuchung der variablen Nachbarschaftssuche für das Capacitated Facility Location Problem zeigt, variiert die Lösungsgüte in Abhängigkeit der eingesetzten Teilprozeduren und Parameter.
+Zu sehen ist vor allem der Unterschied der Lösungsgüte in Abhängigkeit der Initial-Lösung, der Nachbarschaftsdistanz  und der lokalen Suche.
+Die \ac{RVNS} dominiert den Vergleich der zur Auswahl stehenden Initial-Verfahren.
+Sie stellt einen Kompromiss zwischen der Güte der Lösung und der Rechenzeit unter Berücksichtigung der zugehörigen Kosten dar.
+Aufgrund der eingesetzten maximalen Nachbarschaftsdistanzen $k_{max} = 3$ können die Nachbarschaftsverfahren einfach aus schlechten lokalen Minima entkommen und neue Lösungen generieren.
+Das lokale Suchverfahren $Best$ $Improvement$ ist ebenfalls ein fester Teil der Ergebnisfindung, um qualitativ hochwertige lokale Minima zu finden.
+Die Verfahren zur Generierung von Nachbarschaftslösungen stellen sich im Allgemeinen als ähnlich gut heraus, wobei das Zufallsverfahren $ShakingA$ als geringfügig besser zu bewerten ist.
+Die Idee eine Nachbarschaftslösung anhand der Kundenzuweisungen oder der entstehenden Transportkosten zu erzeugen, stellt sich dennoch bei passender Nachbarschaftsdistanz als gute Alternative heraus.
+Die Berechnung der Kundenzuordnungen einer gegebenen Standortverteilung ist ein wichtiger Bestandteil der Ergebnisfindung.
+Da diese mit der optimierenden MODI-Methode berechnet werden, können die zugehörigen Lösungen im Gegensatz zu einem Greedy-Verfahren aussagekräftig und valide verglichen werden.
+\\
+Die variable Nachbarschaftssuche wird den Anforderungen an eine Heuristik im Bezug auf eine reduzierte Rechenzeit gegenüber exakten Verfahren gerecht.
+Die Rechenergebnisse bestätigen, dass eine Ergebnisfindung in einem kurzen Zeitintervall deutlich besser skaliert, als bei einem exakten Verfahren und das Finden guter lokaler Minima wird ebenfalls erfüllt. 
+Noch größere Probleminstanzen können aussagekräftig in kurzer Zeit berechnet werden und Erweiterungen des Facility Location Problems können ebenfalls in die vorliegende Implementierung eingebettet werden.
+Eine Reduzierung der Rechenzeit kann vor allem bei einem verbesserten Verfahren zum Bestimmen der MODI-Ausgangslösung erzielt werden, um anschließend noch mehr Teile des Lösungsraums zu betrachten.

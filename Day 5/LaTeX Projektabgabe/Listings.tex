@@ -1,0 +1,17 @@
+\cleardoublepage
+\pagenumbering{Roman}
+{\linespread{1.25}
+\renewcommand{\contentsname}{\textrm{\color{rubblue}\LARGE{Inhaltsverzeichnis}}}
+{\tableofcontents}
+\newpage
+\let\origaddvspace\addvspace
+ \renewcommand{\addvspace}[1]{}
+ \begin{doublespacing}
+  \vspace*{-4.5cm}
+ {\textrm{\LoF}}
+ \end{doublespacing} % List of All Figures neu definiert
+ {\textrm{\listoftables}}
+ \vspace{2.75cm}
+
+\cleardoublepage
+\pagenumbering{arabic}
