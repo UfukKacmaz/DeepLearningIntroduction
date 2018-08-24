@@ -39,7 +39,6 @@ def dropout(x, keep_prob=1.0):
 
 # Batch Normalization Layer
 def batch_norm(x, is_training):
-    #x = tf.layers.batch_normalization(x, training=is_training)
     x = tf.contrib.layers.batch_norm(x, is_training=is_training)
     return x
 

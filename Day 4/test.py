@@ -13,13 +13,13 @@ from layers import *
 from helper import *
 
 # Load dataset
-#dataset_path = "C:/Users/schaf/Documents/GTSRB/Final_Training/Images/"
-dataset_path = "C:/Users/jan/Documents/GTSRB/Final_Training/Images/"
+dataset_path = "C:/Users/schaf/Documents/GTSRB/Final_Training/Images/"
+#dataset_path = "C:/Users/jan/Documents/GTSRB/Final_Training/Images/"
 
 num_classes = 43
 imgs_per_class = 10000
 classes = range(num_classes)
-#save_dataset(dataset_path, classes, imgs_per_class=imgs_per_class)
+save_dataset(dataset_path, classes, imgs_per_class=imgs_per_class)
 data = GTSRB(dataset_path, num_classes)
 data.data_augmentation(augment_size=10000)
 # Model variables
@@ -42,60 +42,48 @@ from keras.optimizers import *
 epochs = 50
 batch_size = 32
 learning_rate = 1e-4
-optimizer = tf.train.AdamOptimizer
-# Helper variables
-train_mini_batches = train_size // batch_size
-valid_mini_batches = valid_size // batch_size
-test_mini_batches = test_size // batch_size
-# Variables for early stopping in training
-early_stopping_crit = "accuracy"
-early_stopping_patience = 5
 
 # Define the CNN
 model = Sequential()
 model.add(Conv2D(32, 3, padding="same", input_shape=(img_width, img_height, img_depth)))
-model.add(BatchNormalization())
-model.add(Dropout(0.2))
+model.add(Dropout(0.3))
 model.add(Activation("relu"))
 model.add(Conv2D(32, 3, padding="same"))
-model.add(BatchNormalization())
-model.add(Dropout(0.2))
+model.add(Dropout(0.3))
 model.add(Activation("relu"))
 model.add(MaxPool2D())
+
 model.add(Conv2D(64, 3, padding="same"))
-model.add(BatchNormalization())
-model.add(Dropout(0.2))
+model.add(Dropout(0.3))
 model.add(Activation("relu"))
 model.add(Conv2D(64, 3, padding="same"))
-model.add(BatchNormalization())
-model.add(Dropout(0.2))
+model.add(Dropout(0.3))
 model.add(Activation("relu"))
 model.add(MaxPool2D())
+
 model.add(Conv2D(128, 3, padding="same"))
-model.add(BatchNormalization())
-model.add(Dropout(0.2))
+model.add(Dropout(0.3))
 model.add(Activation("relu"))
 model.add(Conv2D(128, 3, padding="same"))
-model.add(BatchNormalization())
-model.add(Dropout(0.2))
+model.add(Dropout(0.3))
 model.add(Activation("relu"))
 model.add(MaxPool2D())
+
 model.add(Flatten())
-model.add(Dense(512))
-model.add(Dropout(0.2))
+model.add(Dense(1024))
+model.add(Dropout(0.5))
 model.add(Activation("relu"))
 model.add(Dense(num_classes))
-model.add(BatchNormalization())
 model.add(Activation("softmax"))
 
 # Print the CNN layers
 model.summary()
 
 # Train the CNN
-optimizer = Adam(lr=learning_rate)
+optimizer = RMSprop(lr=learning_rate)
 model.compile(loss="categorical_crossentropy", optimizer=optimizer, metrics=["accuracy"])
 model.fit(x_train, y_train, verbose=1,
-        batch_size=32, nb_epoch=50,
+        batch_size=batch_size, nb_epoch=epochs,
         validation_data=(x_valid, y_valid))
 
 # Test the CNN

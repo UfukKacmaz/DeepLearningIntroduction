@@ -4,7 +4,7 @@ from load_gtsrb import *
 import tensorflow as tf
 
 def occlusion_plot(prediction_heatmap):
-    cMap = "coolwarm"
+    cMap = "Spectral"
     fig, ax = plt.subplots()
     heatmap = ax.pcolor(prediction_heatmap, cmap=cMap)
     cbar = plt.colorbar(heatmap)
@@ -18,8 +18,13 @@ def occlusion(img, label, box_size, sess, pred_op, x):
             img_s = img.copy()
             img_s[i:box_size+i, j:box_size+j] = gray_box
             x_p = sess.run([pred_op], feed_dict={x: img_s.reshape(-1, img_s.shape[0], img_s.shape[1], img_s.shape[2])})
+            print(x_p)
+            print(x_p.shape)
+            x_p = sess.run(tf.nn.softmax(x_p))
+            print(x_p)
+            print(x_p.shape)
             x_p = np.reshape(x_p, (label.shape[0]))
-            x_p = np.exp(x_p) / np.sum(np.exp(x_p), axis=0)
+            #x_p = np.exp(x_p) / np.sum(np.exp(x_p), axis=0)
             prediction_heatmap[i][j] = x_p[np.argmax(label)]
     occlusion_plot(prediction_heatmap)
 
