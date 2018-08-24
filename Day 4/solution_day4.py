@@ -31,7 +31,7 @@ img_width, img_height, img_depth = data.img_width, data.img_height, data.img_dep
 ################
  
 # Hyperparameters
-epochs = 50
+epochs = 25
 batch_size = 32
 learning_rate = 1e-3
 optimizer = tf.train.AdamOptimizer
@@ -60,9 +60,14 @@ def cnn_model(x, training, keep_prob, cnn_graph):
     # Aufgabe 5: Dropout und BatchNorm siehe unten, aus layers.py
     # Aufgabe 6: Early stopping unten verwendet
     with cnn_graph.as_default():
-        x = conv_layer(x, filters=32, k_size=3, name="conv1") # 32x32
+        x = conv_layer(x, filters=16, k_size=3, name="conv1") # 32x32
         x = tf.nn.relu(x)
-        x = conv_layer(x, filters=64, k_size=3, name="conv2")
+        x = conv_layer(x, filters=16, k_size=3, name="conv2")
+
+        heatmap1 = tf.identity(x)
+        heatmap1 = conv_layer(heatmap1, 1, 1, name="heatmap1")
+        heatmap1 = tf.nn.relu(heatmap1)
+
         x = tf.nn.relu(x)
         x = max_pool(x) #16x16
         x = dropout(x, 0.25, training=training)
@@ -70,6 +75,11 @@ def cnn_model(x, training, keep_prob, cnn_graph):
         x = conv_layer(x, filters=32, k_size=3, name="conv3")
         x = tf.nn.relu(x)
         x = conv_layer(x, filters=32, k_size=5, name="conv4")
+
+        heatmap2 = tf.identity(x)
+        heatmap2 = conv_layer(heatmap2, 1, 1, name="heatmap2")
+        heatmap2 = tf.nn.relu(heatmap2)
+
         x = tf.nn.relu(x)
         x = max_pool(x) # 8x8
 
@@ -80,11 +90,14 @@ def cnn_model(x, training, keep_prob, cnn_graph):
         x = tf.nn.relu(x)
         x = dropout(x, 0.5, training=training)
         x = dense_layer(x, units=num_classes, name="fc2")
-        return x
+
+        heatmaps = {"1": heatmap1, "2": heatmap2}
+
+        return (x, heatmaps)
 
 with cnn_graph.as_default():
-    # TensorFlow Ops to train/test
-    pred_op = cnn_model(x, training, keep_prob, cnn_graph)
+    # TensorFlow Ops
+    (pred_op, heatmaps) = cnn_model(x, training, keep_prob, cnn_graph)
     loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=pred_op, labels=y))
     correct_result_op = tf.equal(tf.argmax(pred_op, axis=1), tf.argmax(y, axis=1))
     accuracy_op = tf.reduce_mean(tf.cast(correct_result_op , tf.float32))
@@ -137,7 +150,7 @@ with tf.Session(graph=cnn_graph) as sess:
             print("Early Stopping!")
             break
         if valid_acc > best_valid_acc:
-            best_model_params = get_model_params()
+           best_model_params = get_model_params()
         last_valid_acc = valid_acc
         train_losses.append(train_loss)
         valid_losses.append(valid_loss)
@@ -159,10 +172,13 @@ with tf.Session(graph=cnn_graph) as sess:
     test_acc = test_acc / test_mini_batches
     print("Test Accuracy:\t", test_acc)
     print("Test Loss:\t", test_loss)
+    # Get sample from testset
+    img, label = data.x_test[11], data.y_test[11]
     # Occlusion Map
-    img, label = data.x_test[10], data.y_test[10]
     box_size = 5
-    occlusion(img, label, box_size, sess, pred_op, x)
+    get_occlusion(img, label, box_size, sess, pred_op, x)
+    # Heatmap
+    get_heatmap(img, sess, pred_op, heatmaps, x)
     # Save model
     acc_str = str(test_acc)
     save_path = saver.save(sess, "./saves_cnn/cnn_model_save"+acc_str[2:]+".ckpt")

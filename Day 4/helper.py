@@ -2,26 +2,47 @@ import numpy as np
 import matplotlib.pyplot as plt
 from load_gtsrb import *
 import tensorflow as tf
+from layers import *
+from skimage import transform
+import matplotlib.cm
 
-def occlusion_plot(prediction_heatmap):
+def occlusion_plot(occlusion_map, img):
     cMap = "Spectral"
-    fig, ax = plt.subplots()
-    heatmap = ax.pcolor(prediction_heatmap, cmap=cMap)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6), subplot_kw={'aspect': 1})
+    heatmap = ax2.pcolor(occlusion_map, cmap=cMap)
     cbar = plt.colorbar(heatmap)
+    ax1.imshow(img/255.0)
     plt.show()
 
-def occlusion(img, label, box_size, sess, pred_op, x):
-    prediction_heatmap = np.empty(shape=(img.shape[0]-box_size+1, img.shape[1]-box_size+1), dtype=np.float32)
+def heatmap_plot(heat_map, img):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6), subplot_kw={'aspect': 1})
+    heatmap = ax2.pcolor(heat_map, cmap=plt.cm.jet)
+    cbar = plt.colorbar(heatmap)
+    ax1.imshow(img/255.0)
+    plt.show()
+
+def get_occlusion(img, label, box_size, sess, pred_op, x):
+    occlusion_map = np.full((img.shape[0], img.shape[1]), 1.0)
     gray_box = np.full((box_size,box_size,3), 100)
-    for i in range(img.shape[0]-box_size+1):
-        for j in range(img.shape[1]-box_size+1):
+    for i in range(img.shape[0]-gray_box.shape[0]):
+        for j in range(img.shape[1]-gray_box.shape[1]):
             img_s = img.copy()
-            img_s[i:box_size+i, j:box_size+j] = gray_box
-            x_p = sess.run([pred_op], feed_dict={x: img_s.reshape(-1, img_s.shape[0], img_s.shape[1], img_s.shape[2])})[0]
+            img_s[i:i+gray_box.shape[0], j:j+gray_box.shape[1]] = gray_box
+            x_p = sess.run([pred_op], 
+                feed_dict={x: img_s.reshape(-1, img_s.shape[0], img_s.shape[1], img_s.shape[2])})[0]
             x_p = sess.run(tf.nn.softmax(x_p))
             x_p = np.reshape(x_p, (label.shape[0]))
-            prediction_heatmap[i][j] = x_p[np.argmax(label)]
-    occlusion_plot(prediction_heatmap)
+            occlusion_map[i+gray_box.shape[0]//2][j+gray_box.shape[1]//2] = x_p[np.argmax(label)]
+    occlusion_plot(occlusion_map, img)
+
+def get_heatmap(img, sess, pred_op, heatmaps, x):
+    (x, heatmaps) = sess.run([pred_op, heatmaps], 
+                feed_dict={x: img.reshape(-1, img.shape[0], img.shape[1], img.shape[2])})
+    for heatmap in heatmaps.values():
+        # Heatmap from Conv Layer
+        heatmap = heatmap.squeeze(axis=(0, 3))
+        heatmap = transform.resize(heatmap/255.0, (32, 32))
+        heatmap_plot(heatmap, img)
 
 # Display the convergence of the errors
 def display_convergence_error(train_error, valid_error):

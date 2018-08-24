@@ -27,8 +27,8 @@ def dropout(x, keep_prob=1.0, training=False):
     return tf.layers.dropout(x, keep_prob, training=training)
 
 # Batch Normalization Layer
-def batch_norm(x, training):
-    return tf.contrib.layers.batch_norm(x, training=training)
+def batch_norm(x, training=False):
+    return tf.layers.batch_normalization(x, training=training)
 
 # Define a conv layer
 def conv_layer(x, filters, k_size, name="conv", padding="same", strides=(1,1), w_initializer="xavier"):
