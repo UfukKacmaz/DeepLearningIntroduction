@@ -9,14 +9,7 @@ import matplotlib.cm
 def occlusion_plot(occlusion_map, img):
     cMap = "Spectral"
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6), subplot_kw={'aspect': 1})
-    heatmap = ax2.pcolor(occlusion_map, cmap=cMap)
-    cbar = plt.colorbar(heatmap)
-    ax1.imshow(img/255.0)
-    plt.show()
-
-def heatmap_plot(heat_map, img):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6), subplot_kw={'aspect': 1})
-    heatmap = ax2.pcolor(heat_map, cmap=plt.cm.jet)
+    heatmap = ax2.pcolor(np.transpose(occlusion_map), cmap=cMap)
     cbar = plt.colorbar(heatmap)
     ax1.imshow(img/255.0)
     plt.show()
@@ -35,14 +28,25 @@ def get_occlusion(img, label, box_size, sess, pred_op, x):
             occlusion_map[i+gray_box.shape[0]//2][j+gray_box.shape[1]//2] = x_p[np.argmax(label)]
     occlusion_plot(occlusion_map, img)
 
-def get_heatmap(img, sess, pred_op, heatmaps, x):
-    (x, heatmaps) = sess.run([pred_op, heatmaps], 
-                feed_dict={x: img.reshape(-1, img.shape[0], img.shape[1], img.shape[2])})
-    for heatmap in heatmaps.values():
-        # Heatmap from Conv Layer
-        heatmap = heatmap.squeeze(axis=(0, 3))
-        heatmap = transform.resize(heatmap/255.0, (32, 32))
-        heatmap_plot(heatmap, img)
+def heatmap_plot(heatmaps):
+    for layer_index, heatmap in enumerate(heatmaps.values()):
+        num_heatmap = heatmap.shape[-1]
+        heatmap = np.squeeze(heatmap, axis=0)
+        heatmap = np.transpose(heatmap, axes=(2,0,1))
+        if num_heatmap <= 16:
+            s_shape = [4, num_heatmap/4]
+            plt.figure(1, figsize=(10,6))
+            for filter_index, heatmap_filter in enumerate(heatmap):
+                plt.subplot(s_shape[0], s_shape[1], filter_index+1)
+                plt.title("Filter: " + str(filter_index+1) + " of Layer: " + str(layer_index+1))
+                plt.imshow(heatmap_filter)
+            plt.tight_layout()
+            plt.show()
+
+def get_heatmap(img, sess, heatmaps, x):
+    heatmaps = sess.run([heatmaps],
+                        feed_dict={x: img.reshape(-1, img.shape[0], img.shape[1], img.shape[2])})[0]
+    heatmap_plot(heatmaps)
 
 # Display the convergence of the errors
 def display_convergence_error(train_error, valid_error):

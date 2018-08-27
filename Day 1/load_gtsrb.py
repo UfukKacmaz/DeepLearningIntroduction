@@ -48,7 +48,7 @@ def load_gtsrb_images(dataset_path, classes = range(43), max_num_imgs_per_class=
             file = open(dump_file, 'wb')
             pickle.dump(image_block_class, file)
             file.close()
-
+ 
     class_descs = []
     class_descs.append('Speed limit 20') #0
     class_descs.append('Speed limit 30') #1

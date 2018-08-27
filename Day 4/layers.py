@@ -47,3 +47,9 @@ def dense_layer(x, units, name="fc", w_initializer="xavier"):
 # Transform to flattened layer
 def flatten(x):
     return tf.layers.flatten(x)
+
+# Activation/Heatmaps
+def heatmap(x):
+    heatmap = tf.identity(x)
+    heatmap = tf.nn.relu(heatmap)
+    return heatmap

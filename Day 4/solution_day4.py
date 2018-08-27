@@ -31,7 +31,7 @@ img_width, img_height, img_depth = data.img_width, data.img_height, data.img_dep
 ################
  
 # Hyperparameters
-epochs = 25
+epochs = 4
 batch_size = 32
 learning_rate = 1e-3
 optimizer = tf.train.AdamOptimizer
@@ -41,7 +41,7 @@ valid_mini_batches = valid_size // batch_size
 test_mini_batches = test_size // batch_size
 # Variables for early stopping in training
 early_stopping_crit = "accuracy"
-early_stopping_patience = 100
+early_stopping_patience = 10
 
 cnn_graph = tf.Graph()
 with cnn_graph.as_default():
@@ -62,36 +62,42 @@ def cnn_model(x, training, keep_prob, cnn_graph):
     with cnn_graph.as_default():
         x = conv_layer(x, filters=16, k_size=3, name="conv1") # 32x32
         x = tf.nn.relu(x)
+        heatmap1 = heatmap(x)
+
         x = conv_layer(x, filters=16, k_size=3, name="conv2")
-
-        heatmap1 = tf.identity(x)
-        heatmap1 = conv_layer(heatmap1, 1, 1, name="heatmap1")
-        heatmap1 = tf.nn.relu(heatmap1)
-
         x = tf.nn.relu(x)
         x = max_pool(x) #16x16
         x = dropout(x, 0.25, training=training)
+        heatmap2 = heatmap(x)
 
         x = conv_layer(x, filters=32, k_size=3, name="conv3")
         x = tf.nn.relu(x)
-        x = conv_layer(x, filters=32, k_size=5, name="conv4")
+        heatmap3 = heatmap(x)
 
-        heatmap2 = tf.identity(x)
-        heatmap2 = conv_layer(heatmap2, 1, 1, name="heatmap2")
-        heatmap2 = tf.nn.relu(heatmap2)
-
+        x = conv_layer(x, filters=32, k_size=3, name="conv4")
         x = tf.nn.relu(x)
         x = max_pool(x) # 8x8
+        x = dropout(x, 0.25, training=training)
+        heatmap4 = heatmap(x)
+
+        x = conv_layer(x, filters=16, k_size=3, name="conv5")
+        x = tf.nn.relu(x)
+        heatmap5 = heatmap(x)
+
+        x = conv_layer(x, filters=16, k_size=3, name="conv6")
+        x = tf.nn.relu(x)
+        x = max_pool(x) # 4x4
+        heatmap6 = heatmap(x)
 
         x = flatten(x)
         x = dropout(x, 0.25, training=training)
-
         x = dense_layer(x, units=128, name="fc1")
         x = tf.nn.relu(x)
         x = dropout(x, 0.5, training=training)
         x = dense_layer(x, units=num_classes, name="fc2")
 
-        heatmaps = {"1": heatmap1, "2": heatmap2}
+        heatmaps = {"1": heatmap1, "2": heatmap2, "3": heatmap3, 
+                    "4": heatmap4, "5": heatmap5, "6": heatmap6}
 
         return (x, heatmaps)
 
@@ -178,7 +184,7 @@ with tf.Session(graph=cnn_graph) as sess:
     box_size = 5
     get_occlusion(img, label, box_size, sess, pred_op, x)
     # Heatmap
-    get_heatmap(img, sess, pred_op, heatmaps, x)
+    get_heatmap(img, sess, heatmaps, x)
     # Save model
     acc_str = str(test_acc)
     save_path = saver.save(sess, "./saves_cnn/cnn_model_save"+acc_str[2:]+".ckpt")

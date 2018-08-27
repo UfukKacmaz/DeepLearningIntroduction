@@ -16,13 +16,21 @@ classes = [2, 12, 13]
 [imgs, labels, class_descs, sign_ids] = load_gtsrb_images(dataset_path, classes, 150)  
 imgs = imgs.astype(np.uint8)
 
-# plt.imshow(imgs[0])
-# plt.show()
+# Show image from class 2
+plt.imshow(imgs[0])
+plt.show()
+# Show image from class 12
+plt.imshow(imgs[150])
+plt.show()
+# Show image from class 13
+plt.imshow(imgs[300])
+plt.show()
 
 ################
 ## EXERCISE 2 ##
 ################
 
+# Convert RGB2GRAY
 imgs = np.array([cv2.cvtColor(img, cv2.COLOR_RGB2GRAY) for img in imgs])
 
 ################
@@ -30,6 +38,8 @@ imgs = np.array([cv2.cvtColor(img, cv2.COLOR_RGB2GRAY) for img in imgs])
 ################
 
 # Compute HOG Features for given image
+# Code of this function is mostly from opencv doc
+# we figured out the hyperparameters
 def hog_image(img, cell_size, block_size, nbins):
     # winSize is the size of the image cropped to an multiple of the cell size
     hog = cv2.HOGDescriptor(_winSize=(img.shape[1] // cell_size[1] * cell_size[1],
@@ -57,59 +67,60 @@ def hog_image(img, cell_size, block_size, nbins):
     gradients /= cell_count
     return gradients
 
-def extract_hog_features(imgs, cell_size, block_size, nbins):
     # Save HOG Features for every image
-    bin = 3
+def extract_hog_features(imgs, cell_size, block_size, nbins):
     x = np.empty(shape=(imgs.shape[0], imgs[0].shape[0] // cell_size[0] * imgs[0].shape[1] // cell_size[1] * nbins))
     for i, img in enumerate(imgs):
         gradients = hog_image(img, cell_size, block_size, nbins)
         x[i] = gradients.ravel()
     return x, labels
 
+# Hyperparameters of HOG
 cell_size = (8, 8)
 block_size = (4, 4)
 nbins = 9
-# x, y = extract_hog_features(imgs, cell_size, block_size, nbins)
-# np.save(dataset_path+"x_hog.npy", x)
-# np.save(dataset_path+"y_hog.npy", labels)
+# Extract features, save and load to disk (if needed)
+x, y = extract_hog_features(imgs, cell_size, block_size, nbins)
+np.save(dataset_path+"x_hog.npy", x)
+np.save(dataset_path+"y_hog.npy", labels)
 x = np.load(dataset_path+"x_hog.npy")
 y = np.load(dataset_path+"y_hog.npy")
 
 ################
 ## EXERCISE 4 ##
 ################
-
 from sklearn.decomposition import PCA
 
+# Transform to 2d subspace with PCA
 def perform_pca(x):
     pca = PCA(n_components=2)
     pca.fit(x)
     x_transformed = pca.transform(x)
     return x_transformed
 
-# x_transformed = perform_pca(x)
-# np.save(dataset_path+"x_hog_pca.npy", x_transformed)
-# x_transformed = np.load(dataset_path+"x_hog_pca.npy")
+x_transformed = perform_pca(x)
+np.save(dataset_path+"x_hog_pca.npy", x_transformed)
+x_transformed = np.load(dataset_path+"x_hog_pca.npy")
 
 ################
 ## EXERCISE 5 ##
 ################
 
-# colors = {2: "red", 12: "blue", 13: "green"}
-# for x_p, y_p in zip(x_transformed, y):
-#     plt.scatter(x_p[0], x_p[1], color=colors[y_p])
-# ax = plt.gca()
-# ax.legend(["Speed limit 50", "Right of way on this street", "Yield way"])
-# leg = ax.get_legend()
-# leg.legendHandles[0].set_color('red')
-# leg.legendHandles[1].set_color('blue')
-# leg.legendHandles[2].set_color('green')
-# plt.show()
+# Scatter plot for the three given classes
+colors = {2: "red", 12: "blue", 13: "green"}
+for x_p, y_p in zip(x_transformed, y):
+    plt.scatter(x_p[0], x_p[1], color=colors[y_p])
+ax = plt.gca()
+ax.legend(["Speed limit 50", "Right of way on this street", "Yield way"])
+leg = ax.get_legend()
+leg.legendHandles[0].set_color('red')
+leg.legendHandles[1].set_color('blue')
+leg.legendHandles[2].set_color('green')
+plt.show()
 
 ################
 ## EXERCISE 6 ##
 ################
-
 import matplotlib
 from matplotlib import colors as mcolors
 from sklearn.model_selection import train_test_split
@@ -119,12 +130,10 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
 
 def get_train_valid_test(x, y):
-    test_size = 0.3
-    valid_size = 0.2 / (1 - test_size)
     x_train, x_test, y_train, y_test = train_test_split(
-        x, y, test_size=test_size, random_state=42)
+        x, y, test_size=0.3, random_state=42)
     x_train, x_valid, y_train, y_valid = train_test_split(
-        x_train, y_train, test_size=valid_size, random_state=42)
+        x_train, y_train, test_size=0.2, random_state=42)
     return (x_train, y_train), (x_valid, y_valid), (x_test, y_test)
 
 num_classes = 3
@@ -135,19 +144,19 @@ parameters = {
     'gamma': ["auto", 1]
     }
 
-# print("\n\nTRAINING FOR ALL CLASSES!")
-# svc = SVC(decision_function_shape="ovr")
-# clf = GridSearchCV(svc, parameters)
-# clf.fit(x_train, y_train)
+print("\n\nTRAINING FOR THREE CLASSES!")
+svc = SVC(decision_function_shape="ovr")
+clf = GridSearchCV(svc, parameters)
+clf.fit(x_train, y_train)
 
-# print("VALID FOR ALL CLASSES!")
-# print("Best parameters set found on development set:")
-# print(clf.best_params_)
-# y_valid, y_pred = y_valid, clf.predict(x_valid)
-# print("Validation acc: ", clf.score(x_valid, y_valid))
-# print(confusion_matrix(y_valid, y_pred, labels=range(num_classes)))
+print("VALID FOR THREE CLASSES!")
+print("Best parameters set found on development set:")
+print(clf.best_params_)
+y_valid, y_pred = y_valid, clf.predict(x_valid)
+print("Validation acc: ", clf.score(x_valid, y_valid))
+print(confusion_matrix(y_valid, y_pred, labels=range(num_classes)))
 
-print("TESTING FOR ALL CLASSES!")
+print("TESTING FOR THREE CLASSES!")
 best_c = 0.5
 best_gamma = "auto"
 best_kernel = "linear"
@@ -172,23 +181,23 @@ imgs = np.array([cv2.cvtColor(img, cv2.COLOR_RGB2GRAY) for img in imgs])
 cell_size = (8, 8)
 block_size = (4, 4)
 nbins = 9
-#x, y = extract_hog_features(imgs, cell_size, block_size, nbins)
-#np.save(dataset_path+"x_hog_full.npy", x)
-#np.save(dataset_path+"y_hog_full.npy", labels)
+x, y = extract_hog_features(imgs, cell_size, block_size, nbins)
+np.save(dataset_path+"x_hog_full.npy", x)
+np.save(dataset_path+"y_hog_full.npy", labels)
 x = np.load(dataset_path+"x_hog_full.npy")
 y = np.load(dataset_path+"y_hog_full.npy")
 
 # Compute PCA for hog features for all classes
-#x_transformed = perform_pca(x)
-#np.save(dataset_path+"x_hog_pca_full.npy", x_transformed)
+x_transformed = perform_pca(x)
+np.save(dataset_path+"x_hog_pca_full.npy", x_transformed)
 x_transformed = np.load(dataset_path+"x_hog_pca_full.npy")
 
 # Plot PCA results
-# cmap = matplotlib.cm.get_cmap('Spectral')
-# colors = {i: cmap(i*(1/num_classes)) for i in range(num_classes)}
-# for x_p, y_p in zip(x_transformed, y):
-#     plt.scatter(x_p[0], x_p[1], color=colors[y_p])
-# plt.show()
+cmap = matplotlib.cm.get_cmap('Spectral')
+colors = {i: cmap(i*(1/num_classes)) for i in range(num_classes)}
+for x_p, y_p in zip(x_transformed, y):
+    plt.scatter(x_p[0], x_p[1], color=colors[y_p])
+plt.show()
 
 # Split Dataset and compute SVM classification
 (x_train, y_train), (x_valid, y_valid), (x_test, y_test) = get_train_valid_test(x, y)
@@ -198,17 +207,17 @@ parameters = {
     'gamma': ["auto", 1]
     }
 
-# print("\n\nTRAINING FOR ALL CLASSES!")
-# svc = SVC(decision_function_shape="ovr")
-# clf = GridSearchCV(svc, parameters, n_jobs=-1)
-# clf.fit(x_train, y_train)
+print("\n\nTRAINING FOR ALL CLASSES!")
+svc = SVC(decision_function_shape="ovr")
+clf = GridSearchCV(svc, parameters, n_jobs=-1)
+clf.fit(x_train, y_train)
 
-# print("VALID FOR ALL CLASSES!")
-# print("Best parameters set found on development set:")
-# print(clf.best_params_)
-# y_valid, y_pred = y_valid, clf.predict(x_valid)
-# print("Validation acc: ", clf.score(x_valid, y_valid))
-# print(confusion_matrix(y_valid, y_pred, labels=range(num_classes)))
+print("VALID FOR ALL CLASSES!")
+print("Best parameters set found on development set:")
+print(clf.best_params_)
+y_valid, y_pred = y_valid, clf.predict(x_valid)
+print("Validation acc: ", clf.score(x_valid, y_valid))
+print(confusion_matrix(y_valid, y_pred, labels=range(num_classes)))
 
 print("TESTING FOR ALL CLASSES!")
 best_c = 10
@@ -224,10 +233,10 @@ print(confusion_matrix(y_test, y_pred, labels=range(num_classes)))
 ## EXERCISE 8 ##
 ################
 
-rand_indx = [i for i in range(x_test.shape[0]) if y_pred[i] != y_test[i]]
-if len(rand_indx) > 0:
-    img = imgs[rand_indx[0]]
-    plt.imshow(img)
-    title = "Target: " + str(y_test[rand_indx[0]]) + " - Pred: " + str(y_pred[rand_indx[0]]) 
-    plt.title(title)
-    plt.show()
+# rand_indx = [i for i in range(x_test.shape[0]) if y_pred[i] != y_test[i]]
+# if len(rand_indx) > 0:
+#     img = imgs[rand_indx[0]]
+#     plt.imshow(img)
+#     title = "Target: " + str(y_test[rand_indx[0]]) + " - Pred: " + str(y_pred[rand_indx[0]]) 
+#     plt.title(title)
+#     plt.show()
