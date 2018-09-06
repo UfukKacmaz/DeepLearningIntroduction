@@ -11,6 +11,6 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {chapter}{\numberline {5}Aufgaben von Tag 4}{3}{chapter.5}
 \defcounter {refsection}{0}\relax 
-\contentsline {chapter}{Anhang}{4}{chapter.5}
+\contentsline {chapter}{Anhang}{3}{chapter.5}
 \defcounter {refsection}{0}\relax 
 \addtokomafont {chapterentry}{Anhang\ } 
