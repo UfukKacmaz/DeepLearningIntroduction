@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import cv2
 
 from load_gtsrb import *  
-
+ 
 ################
 ## EXERCISE 1 ##
 ################
@@ -16,14 +16,16 @@ classes = [2, 12, 13]
 [imgs, labels, class_descs, sign_ids] = load_gtsrb_images(dataset_path, classes, 150)  
 imgs = imgs.astype(np.uint8)
 
+fig, axs = plt.subplots(1, 3, figsize=(15,5))
 # Show image from class 2
-plt.imshow(imgs[0])
-plt.show()
+axs[0].imshow(imgs[0])
+axs[0].set_axis_off()
 # Show image from class 12
-plt.imshow(imgs[150])
-plt.show()
+axs[1].imshow(imgs[150])
+axs[1].set_axis_off()
 # Show image from class 13
-plt.imshow(imgs[300])
+axs[2].imshow(imgs[300])
+axs[2].set_axis_off()
 plt.show()
 
 ################
@@ -80,9 +82,9 @@ cell_size = (8, 8)
 block_size = (4, 4)
 nbins = 9
 # Extract features, save and load to disk (if needed)
-x, y = extract_hog_features(imgs, cell_size, block_size, nbins)
-np.save(dataset_path+"x_hog.npy", x)
-np.save(dataset_path+"y_hog.npy", labels)
+# x, y = extract_hog_features(imgs, cell_size, block_size, nbins)
+# np.save(dataset_path+"x_hog.npy", x)
+# np.save(dataset_path+"y_hog.npy", labels)
 x = np.load(dataset_path+"x_hog.npy")
 y = np.load(dataset_path+"y_hog.npy")
 
@@ -181,9 +183,9 @@ imgs = np.array([cv2.cvtColor(img, cv2.COLOR_RGB2GRAY) for img in imgs])
 cell_size = (8, 8)
 block_size = (4, 4)
 nbins = 9
-x, y = extract_hog_features(imgs, cell_size, block_size, nbins)
-np.save(dataset_path+"x_hog_full.npy", x)
-np.save(dataset_path+"y_hog_full.npy", labels)
+# x, y = extract_hog_features(imgs, cell_size, block_size, nbins)
+# np.save(dataset_path+"x_hog_full.npy", x)
+# np.save(dataset_path+"y_hog_full.npy", labels)
 x = np.load(dataset_path+"x_hog_full.npy")
 y = np.load(dataset_path+"y_hog_full.npy")
 
@@ -201,10 +203,11 @@ plt.show()
 
 # Split Dataset and compute SVM classification
 (x_train, y_train), (x_valid, y_valid), (x_test, y_test) = get_train_valid_test(x, y)
+
 parameters = {
     'kernel':('poly', 'linear', 'rbf'), 
-    'C':[0.5, 1, 5, 10], 
-    'gamma': ["auto", 1]
+    'C':[0.1 0.5, 1, 10], 
+    'gamma': ["auto", 0.1, 0.5]
     }
 
 print("\n\nTRAINING FOR ALL CLASSES!")
