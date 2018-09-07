@@ -1,0 +1,41 @@
+\chapter{Aufgaben von Tag 2}
+
+Für die Aufgaben an Tag 2 haben wir uns für die drei folgenden Klassen entschieden.
+Die erste Klasse ist "Speed limit 50" (Klasse 2), die zweite ist "Right of way on this street" (Klasse 12) und die dritte ist "Yield way" (Klasse 13). Jeweils ein Beispiel Bild dieser Klassen kann man der folgenden Abbildung entnehmen.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.6]{./bilder/3_classes_imshow.png}
+\caption{Beispielbilder der drei Klassen}
+\end{figure}
+
+Zunächst hatten wir es mit drei sehr ähnlichen Schildern versucht (30er, 50er und 70er Zone). Doch dort haben wir eine schlechtere Genauigkeit mit den im folgenden beschriebenen Modellen erreicht. Deshalb haben wir uns für eine diversere Ausprägung der Klassen entschieden.\\
+Die verwendete Feature Extraction Methode ist der HOG-Deskriptor. Dieser bekommt ein Bild aus dem GTSRB Datensatz als Input und extrahiert vermeintlich wichtige Features.\\
+Diese extrahierten Features können dann im folgenden als Input in ein beliebiges Klassifikationsverfahren gegeben werden. Basierend auf diesem Input soll der Klassifikator dann eine Zuordnung zu einer der gegebenen Klassen geben.\\
+Doch zunächst haben wir mit der Principal Component Analysis (PCA) eine Dimensionsreduktion des Datensatzes ausgeführt. Diese Dimensiosnreduktion kann unter Anderem für eine Visualieierung des Datensatzes im z.B. 2D- oder 3D-Raum genutzt werden.\\
+Folgende Grafik stellt diese Transformation der HOG-Features in den niedrig-dimensionalen 2D-Raum dar.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.7]{./bilder/3_classes_pca.png}
+\caption{Darstellung der Klassen nach der PCA-Transformation im 2D-Raum}
+\end{figure}
+
+Der Grafik kann man nun Nachbarschaftsbeziehungen der einzelnen Punkte, sowie auch Klassen entnehmen.
+Daraus kann nun geschlussfolgert werden, dass der HOG-Deskriptor für die drei gewählten Klassen eine sehr gute Abgrenzung der Klassen generieren kann. Wie der Grafik zu entnehmen ist, ist diese Abgrenzung beinahe linear separierbar, was ein sehr wünschenswerter Fall ist, da dann die Algorithmen im folgenden leichter zu einer sehr guten Lösung kommen werden.\\
+
+Unsere verwendete Klassifikationsmethode ist die Support-Vector-Machine (SVM). 
+Vor dem Einsatz der SVM haben wir den Bestehenden Datensatz in 50\% Trainings-, 20\% Validation- und 30\% Test-Set aufgeteilt. Diese Aufteilung muss ausgeführt werden, da Supervised Learning Algorithmen in der Regel Hyperparameter besitzen. Dessen Werte müssen bestimmt werden und erfordern ein Verfahren um verschiedene Ausprägungen gegeneinander zu testen und die beste gefundene Alternative auszuwählen. Dieser Vergleich der Hyperparmater wird anhand der Auswertung des Validations-Sets ausgeführt und die Wahl der Hyperparameter-Ausprägungen und -Kombinationen haben wir mit der Grid Search berechnet.\\
+Das Training und die Auswertung für den Datensatz mit den drei gewählten Klassen war wie zu erwarten zufriedenstellend und lieferte eine Genauigkeit von 100\%.
+Die komplexere Problemstellung folgte aber darauf. Denn nun haben wir alle 43 gegebenen Klassen verwendet. Die folgende Abbildung soll den eben genannten Arbeitsablauf abbilden.\\
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.45]{./bilder/workflow.png}
+\caption{Arbeitsablauf mit dem Datensatz zur Klassifikation}
+\end{figure}
+
+Nach Auswahl verschiedener Hyperparameter-Ausprägungen und Anwendung der Grid Search. Lieferte folgende Paramter-Konbination die beste Validation-Genauigkeit.
+Kenrel: RBV, Gamma: 1.0 und C: 10.
+Die resultierende Test-Genauigkeit beträgt 95\%.\\
+Abschließend kann gesagt werden, die Kombination eines HOG-Deskriptor und der SVM liefter eine akzeptable Performance auf dem Dataset.

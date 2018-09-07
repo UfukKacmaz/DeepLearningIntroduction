@@ -1,0 +1,16 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\babel@toc {ngerman}{}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {1}Einleitung}{1}{chapter.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {2}Aufgaben von Tag 1}{1}{chapter.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {3}Aufgaben von Tag 2}{1}{chapter.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {4}Aufgaben von Tag 3}{3}{chapter.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {5}Aufgaben von Tag 4}{3}{chapter.5}
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{Anhang}{3}{chapter.5}
+\defcounter {refsection}{0}\relax 
+\addtokomafont {chapterentry}{Anhang\ } 

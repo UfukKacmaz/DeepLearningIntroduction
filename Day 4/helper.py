@@ -2,67 +2,58 @@ import numpy as np
 import matplotlib.pyplot as plt
 from load_gtsrb import *
 import tensorflow as tf
+from layers import *
+from skimage import transform
+import matplotlib.cm
 
-def occlusion_plot(prediction_heatmap):
+def occlusion_plot(occlusion_map, img):
     cMap = "Spectral"
-    #cMap = "RdYlBu"
-    fig, ax = plt.subplots()
-    heatmap = ax.pcolor(prediction_heatmap, cmap=cMap)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6), subplot_kw={'aspect': 1})
+    heatmap = ax2.pcolor(np.transpose(occlusion_map), cmap=cMap)
     cbar = plt.colorbar(heatmap)
+    ax1.imshow(img/255.0)
     plt.show()
 
-def occlusion(img, label, box_size, sess, pred_op, x):
-    prediction_heatmap = np.empty(
-        shape=(img.shape[0], img.shape[1]), dtype=np.float32)
-    #print(box_size//2, img.shape[0]+box_size//2, box_size//2, img.shape[1]+box_size//2)
-    padded_img = np.pad(
-        img, ((box_size//2, box_size//2), (box_size//2, box_size//2), (0, 0)), mode="constant", constant_values=0.0)
-    #print((img.shape[0] + box_size//2))
-    #print((img.shape[0]+ box_size//2))
-    for y_coordinates in range(img.shape[0]):
-        for x_coordinates in range(img.shape[1]):
-            padded_img[box_size // 2 + y_coordinates][box_size // 2 + x_coordinates] = img[y_coordinates][x_coordinates]
-
-    #padded_img[(box_size//2):(img.shape[0] + box_size//2)][(box_size//2):(img.shape[1]+box_size//2)] = img
-    #plt.imshow(img)
-    #plt.show()
+def get_occlusion(img, label, box_size, sess, pred_op, x):
+    occlusion_map = np.full((img.shape[0], img.shape[1]), 1.0)
     gray_box = np.full((box_size,box_size,3), 100)
-    for i in range(prediction_heatmap.shape[0]):
-        for j in range(prediction_heatmap.shape[0]):
-            img_s = padded_img.copy()
-            #print(img_s.shape)
-            #img_s[i:i+box_size, j:j+box_size] = gray_box
-            #img_s = img_s[box_size//2:img.shape[0]+box_size//2][box_size//2:img.shape[1]+box_size//2]
-            for y_coordinates in range(gray_box.shape[0]):
-                for x_coordinates in range(gray_box.shape[1]):
-                        img_s[y_coordinates // 2 + i, x_coordinates // 2 + j] = gray_box[y_coordinates][x_coordinates]
-
-            input = img.copy()
-            for y_coordinates in range(img.shape[0]):
-                for x_coordinates in range(img.shape[1]):
-                    #img_s[y_coordinates][x_coordinates] = img_s[box_size // 2 + y_coordinates][box_size // 2 + x_coordinates]
-                    input[y_coordinates][x_coordinates] = img_s[box_size // 2 + y_coordinates][box_size // 2 + x_coordinates]
-                    #input
-
-            #print(img_s.shape)
-            input = [input]
-
-            #input = img_s.reshape(-1, img_s.shape[0], img_s.shape[1], img_s.shape[2])
-            x_p = sess.run([pred_op], feed_dict={x: input})
+    for i in range(img.shape[0]-gray_box.shape[0]):
+        for j in range(img.shape[1]-gray_box.shape[1]):
+            img_s = img.copy()
+            img_s[i:i+gray_box.shape[0], j:j+gray_box.shape[1]] = gray_box
+            x_p = sess.run([pred_op], 
+                feed_dict={x: img_s.reshape(-1, img_s.shape[0], img_s.shape[1], img_s.shape[2])})[0]
+            x_p = sess.run(tf.nn.softmax(x_p))
             x_p = np.reshape(x_p, (label.shape[0]))
-            print("np.exp(x_p): " + str(np.exp(x_p)))
-            print("np.sum(np.exp(x_p), axis=0):" + str(np.sum(np.exp(x_p), axis=0)))
-            x_p = np.exp(x_p) / np.sum(np.exp(x_p), axis=0)
-            prediction_heatmap[i][j] = x_p[np.argmax(label)]
-    #print(prediction_heatmap)
-    occlusion_plot(prediction_heatmap)
+            occlusion_map[i+gray_box.shape[0]//2][j+gray_box.shape[1]//2] = x_p[np.argmax(label)]
+    occlusion_plot(occlusion_map, img)
+
+def heatmap_plot(heatmaps):
+    for layer_index, heatmap in enumerate(heatmaps.values()):
+        num_heatmap = heatmap.shape[-1]
+        heatmap = np.squeeze(heatmap, axis=0)
+        heatmap = np.transpose(heatmap, axes=(2,0,1))
+        if num_heatmap <= 16:
+            s_shape = [4, num_heatmap/4]
+            plt.figure(1, figsize=(10,6))
+            for filter_index, heatmap_filter in enumerate(heatmap):
+                plt.subplot(s_shape[0], s_shape[1], filter_index+1)
+                plt.title("Filter: " + str(filter_index+1) + " of Layer: " + str(layer_index+1))
+                plt.imshow(heatmap_filter)
+            plt.tight_layout()
+            plt.show()
+
+def get_heatmap(img, sess, heatmaps, x):
+    heatmaps = sess.run([heatmaps],
+                        feed_dict={x: img.reshape(-1, img.shape[0], img.shape[1], img.shape[2])})[0]
+    heatmap_plot(heatmaps)
 
 # Display the convergence of the errors
 def display_convergence_error(train_error, valid_error):
     plt.plot(range(1, len(train_error)+1), train_error, color="red")
     plt.plot(range(1, len(valid_error)+1), valid_error, color="blue")
     plt.legend(["Train", "valid"])
-    plt.title('Error of the NN')
+    plt.title('Errors of the NN')
     plt.xlabel('Epoch')
     plt.ylabel('Error')
     plt.show()
@@ -76,3 +67,15 @@ def display_convergence_acc(train_acc, valid_acc):
     plt.xlabel('Epoch')
     plt.ylabel('Acc')
     plt.show()
+
+def get_model_params():
+    gvars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+    return {gvar.op.name: value for gvar, value in zip(gvars, tf.get_default_session().run(gvars))}
+
+def restore_model_params(model_params):
+    gvar_names = list(model_params.keys())
+    assign_ops = {gvar_name: tf.get_default_graph().get_operation_by_name(gvar_name + "/Assign")
+                  for gvar_name in gvar_names}
+    init_values = {gvar_name: assign_op.inputs[1] for gvar_name, assign_op in assign_ops.items()}
+    feed_dict = {init_values[gvar_name]: model_params[gvar_name] for gvar_name in gvar_names}
+    tf.get_default_session().run(assign_ops, feed_dict=feed_dict)

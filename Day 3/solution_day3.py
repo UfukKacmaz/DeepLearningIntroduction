@@ -210,6 +210,7 @@ with cnn_graph.as_default():
         x = max_pool(x) # 4x4
         x = flatten(x)
         x = fc_layer(x, 128*4*4, 512, name="fc1")
+        x = tf.nn.relu(x)
         x = fc_layer(x, 512, num_classes, name="fc2")
         return x
 

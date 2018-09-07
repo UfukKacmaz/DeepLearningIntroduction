@@ -5,87 +5,51 @@ import os
  
 MEAN                = 0.000
 STD_DEV             = 0.100
-BN_EPSILON          = 0.001
 
 activation_functions = {"relu": tf.nn.relu, "sigmoid": tf.nn.sigmoid, "lrelu": tf.nn.leaky_relu,
-                        "tanh": tf.nn.tanh, "relu6": tf.nn.relu6}
+                        "tanh": tf.nn.tanh, "relu6": tf.nn.relu6, "softmax": tf.nn.softmax}
 weight_initializers = {"truncated_normal": tf.truncated_normal_initializer,
                         "normal": tf.random_normal_initializer,
-                       "xavier": tf.contrib.layers.xavier_initializer}
+                       "xavier": tf.glorot_normal_initializer}
  
-# Conv Layer
-def conv2d(x, W):
-    return tf.nn.conv2d(x, W,
-                        strides=[1,1,1,1],
-                        padding="SAME")
-
 # Max Pool
-def max_pool(x):
-    return tf.nn.max_pool(x,
-                        ksize=[1,2,2,1],
-                        strides=[1,2,2,1],
-                        padding="SAME")
+def max_pool(x, pool_size=(2,2), strides=(2,2), padding="same"):
+    return tf.layers.max_pooling2d(x, pool_size=pool_size,
+                                    strides=strides, padding=padding)
 
 # Avg Pool
-def avg_pool(x):
-    return tf.nn.average_pool(x,
-                        ksize=[1,2,2,1],
-                        strides=[1,2,2,1],
-                        padding="SAME")
+def avg_pool(x, pool_size=(2,2), strides=(2,2), padding="same"):
+    return tf.layers.average_pooling2d(x, pool_size=pool_size,
+                                    strides=strides, padding=padding)
 
 # Dropout
-def dropout(x, keep_prob=1.0):
-    return tf.nn.dropout(x, keep_prob=keep_prob)
+def dropout(x, keep_prob=1.0, training=False):
+    return tf.layers.dropout(x, keep_prob, training=training)
 
 # Batch Normalization Layer
-def batch_norm(x, is_training):
-    #x = tf.layers.batch_normalization(x, training=is_training)
-    x = tf.contrib.layers.batch_norm(x, is_training=is_training)
-    return x
-
-# Init weights
-def weight_initializer(name, shape, initializer="xavier"):
-    with tf.name_scope(name):
-        if initializer != "xavier":
-            initializer = weight_initializers[initializer](mean=MEAN, stddev=STD_DEV)
-        else:
-            initializer = weight_initializers[initializer]()
-        W = tf.get_variable(name+"W", shape=shape, initializer=initializer)
-        tf.summary.histogram(name+"W", W)
-        return W
-
-# Init weights
-def bias_initializer(name, shape, bias_init=0.0):
-    with tf.name_scope(name):
-        b = tf.get_variable(name+"b", shape=shape, initializer=tf.constant_initializer(bias_init))
-        tf.summary.histogram(name+"b", b)
-        return b
+def batch_norm(x, training=False):
+    return tf.layers.batch_normalization(x, training=training)
 
 # Define a conv layer
-def conv_layer(x, size_in, size_out, bias_init=0.0, k_size=3, name="conv", act="relu", initializer="xavier", activation=False):
-    W = weight_initializer(name=name, shape=[k_size, k_size, size_in, size_out], initializer=initializer)
-    b = bias_initializer(name=name, shape=[size_out], bias_init=bias_init)
-    val = conv2d(x, W)
-    val = tf.add(val, b)
-    if activation:
-        activation_func = activation_functions[act]
-        val = activation_func(val)
-    return val
+def conv_layer(x, filters, k_size, name="conv", padding="same", strides=(1,1), w_initializer="xavier"):
+    kernel_initializer = weight_initializers[w_initializer]
+    return tf.layers.conv2d(x, filters=filters, kernel_size=k_size,
+                            strides=strides, padding=padding, name=name,
+                            kernel_initializer=kernel_initializer(),
+                            bias_initializer=tf.zeros_initializer())
 
 # Define a fc layer
-def fc_layer(x, size_in, size_out, bias_init=0.0, name="fc", act="relu", initializer="xavier", activation=False):
-    with tf.name_scope(name):
-        W = weight_initializer(name=name, shape=[size_in, size_out], initializer=initializer)
-        b = bias_initializer(name=name, shape=[size_out], bias_init=bias_init)
-        val = tf.matmul(x, W)
-        val = tf.add(val, b)
-        if activation:
-            activation_func = activation_functions[act]
-            val = activation_func(val)
-        return val
+def dense_layer(x, units, name="fc", w_initializer="xavier"):
+    kernel_initializer = weight_initializers[w_initializer]
+    return tf.layers.dense(x, units=units, kernel_initializer=kernel_initializer(),
+                            bias_initializer=tf.zeros_initializer(), name=name)
 
 # Transform to flattened layer
 def flatten(x):
-    shape = tf.shape(x)
-    new_shape = shape[1] * shape[2] * shape[3]
-    return tf.reshape(x, shape=[-1, new_shape])
+    return tf.layers.flatten(x)
+
+# Activation/Heatmaps
+def heatmap(x):
+    heatmap = tf.identity(x)
+    heatmap = tf.nn.relu(heatmap)
+    return heatmap

@@ -1,0 +1,48 @@
+% Dokumenten Setup
+\documentclass[
+  a4paper,
+  12pt,
+  titlepage,	
+  ngerman,
+  footheight=15pt,
+  headheight=15pt,
+  oneside
+]{scrbook}
+
+% Hier bitte nur bei gegebener LaTeX Erfahrung Änderungen vornehmen.
+\include{Pakete}
+% Fügt eurer Literaturverzeichnis und Bildverzeichnis ein
+% LaTeX -> BibTeX -> LaTeX -> LaTeX beim Laden des Literaturverzeichnisses
+\addbibresource{literatur} 
+\graphicspath{{./bilder/}}
+
+% Beinn des Dokumentes (also die TeX Dateien)
+\begin{document}
+% Silbentrennung-Style
+\sloppy
+
+% Fügt das definierte Deckblatt ein.
+\include{Deckblatt}
+% Fügt die Listings: Table of Content, List of Figures,
+% List of Tables, Acronym- und Symbolverzeichnis ein.
+\include{Listings}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%         Start der Kapitel         %%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Hier gibt es Beispiele für die Verwendung der einzelnen Features.
+\input{Einleitung}
+\input{Tag1}
+\input{Tag2}
+\input{Tag3}
+\input{Tag4}
+\input{Abschluss}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%         Ende der Kapitel         %%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{Anhang}
+\newpage
+% Fügt das Literaturverzeichnis ein.
+% Generell für das Zitieren bitte nur die literatur.bib Datei ändern.
+% Zitieren: \footcite[Vgl. ][]{KEY}
+\printbibliography
+\end{document}

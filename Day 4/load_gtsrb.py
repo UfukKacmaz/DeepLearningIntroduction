@@ -126,8 +126,6 @@ def save_dataset(dataset_path, classes, imgs_per_class=10000):
     idx = np.random.randint(0, x.shape[0], x.shape[0])
     x, y = x[idx], y[idx]
     y = tf.keras.utils.to_categorical(y, num_classes=len(classes))
-    # Transform x images to vector
-    x = np.array([x_k[:].flatten() for x_k in x])
     # Split the dataset
     (x_train, y_train), (x_valid, y_valid), (x_test, y_test) = get_train_valid_test(x, y)
     # Whiten the data
@@ -207,16 +205,14 @@ class GTSRB:
         epoch_y = self.y_train[randidx]
         return epoch_x, epoch_y
 
-    def next_valid_batch(self, batch_size):
-        randidx = np.random.randint(self.valid_size, size=batch_size)
-        epoch_x = self.x_valid[randidx]
-        epoch_y = self.y_valid[randidx]
+    def next_valid_batch(self, i, batch_size):
+        epoch_x = self.x_valid[i*batch_size:(i+1)*batch_size]
+        epoch_y = self.y_valid[i*batch_size:(i+1)*batch_size]
         return epoch_x, epoch_y
     
-    def next_test_batch(self, batch_size):
-        randidx = np.random.randint(self.test_size, size=batch_size)
-        epoch_x = self.x_test[randidx]
-        epoch_y = self.y_test[randidx]
+    def next_test_batch(self, i, batch_size):
+        epoch_x = self.x_test[i*batch_size:(i+1)*batch_size]
+        epoch_y = self.y_test[i*batch_size:(i+1)*batch_size]
         return epoch_x, epoch_y
 
     def shuffle_train(self):
